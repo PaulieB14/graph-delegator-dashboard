@@ -2,7 +2,7 @@
 
 A simple, elegant dashboard to analyze Graph Protocol delegator positions, track rewards, and monitor indexer performance in real-time.
 
-![Dashboard Preview](https://img.shields.io/badge/Status-Demo-yellow) ![License](https://img.shields.io/badge/License-MIT-blue) ![The Graph](https://img.shields.io/badge/The%20Graph-Protocol-blueviolet)
+![Dashboard Preview](https://img.shields.io/badge/Status-Live-green) ![License](https://img.shields.io/badge/License-MIT-blue) ![The Graph](https://img.shields.io/badge/The%20Graph-Protocol-blueviolet)
 
 ## ✨ Features
 
@@ -12,197 +12,122 @@ A simple, elegant dashboard to analyze Graph Protocol delegator positions, track
 - **📈 Performance Metrics**: See gains/losses with percentage calculations
 - **🏭 Indexer Details**: View indexer URLs, reward cuts, and pool sizes
 - **📱 Responsive Design**: Works perfectly on desktop and mobile
+- **🔒 Secure**: API keys stored locally in browser only
 
 ## 🚀 Live Demo
 
 **Try it now:** [https://paulieb14.github.io/graph-delegator-dashboard/](https://paulieb14.github.io/graph-delegator-dashboard/)
 
-### Demo Wallet Addresses
+## 🔑 Setup Instructions
 
-Test the dashboard with these real delegator addresses:
+### 1. Get Your Free API Key
 
-- **Single Indexer Strategy**: `0x1908a3232eed9186b4a5b666075711d2db0200e5`
-  - 5.09M GRT delegated to p-ops
-  - +5.22% unrealized gain
+1. Visit [The Graph Studio](https://thegraph.com/studio/)
+2. Create a free account
+3. Navigate to your dashboard
+4. Copy your API key
 
-- **Diversified Strategy**: `0x825b0a6393fc7c25f44f1985ad7857424bfb9ae6`
-  - 121.77M GRT across 15+ indexers
-  - 702K GRT in realized rewards
+### 2. Use the Dashboard
 
-## 🛠️ How It Works
+1. Open the [live dashboard](https://paulieb14.github.io/graph-delegator-dashboard/)
+2. Enter your API key in the yellow section at the top
+3. Click "Save Key" (stored securely in your browser only)
+4. Enter any wallet address to analyze delegations
+5. View real-time delegation data and rewards!
 
-This dashboard uses **The Graph Network subgraph** to fetch real-time delegation data:
+## 🔒 Security & Privacy
 
-1. **Enter wallet address** in the search field
-2. **Click "Analyze Delegations"** to fetch data
-3. **View detailed breakdown** of all delegations
-4. **Track performance** with unrealized reward calculations
-
-### Data Sources
-
-- **Subgraph**: Graph Network Ethereum (`9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8`)
-- **Network**: Ethereum Mainnet
-- **Update Frequency**: Real-time via The Graph Protocol
+- **API Key Storage**: Your API key is stored locally in your browser using `localStorage`
+- **No Server**: This is a pure frontend application - no backend server involved
+- **Direct Connection**: Connects directly to The Graph Network subgraph
+- **No Tracking**: No analytics, cookies, or user tracking
+- **Open Source**: Full source code available for review
 
 ## 📊 What You'll See
 
 ### Portfolio Summary
 - Total GRT staked across all indexers
-- Total realized rewards from closed positions
-- Number of active vs. total delegations
-- Historical delegation activity
+- Realized rewards (withdrawn)
+- Number of active and total delegations
 
-### Per-Indexer Breakdown
+### Per-Indexer Analysis
 - **Original Amount**: Your initial delegation
-- **Current Value**: Current worth based on exchange rates
-- **Unrealized Rewards**: Gains/losses since delegation
+- **Unrealized Rewards**: Current gains/losses
+- **Realized Rewards**: Already withdrawn rewards
 - **Performance**: Percentage gain/loss
-- **Indexer Details**: Reward cuts, URLs, pool sizes
+- **Indexer Details**: Reward cuts, pool sizes, URLs
 
-### Key Metrics
-- **Personal Exchange Rate**: Your entry rate when delegating
-- **Current Exchange Rate**: Live rate from the indexer
-- **Reward Cuts**: Indexer's fee structure
-- **Pool Size**: Total GRT delegated to each indexer
+## 🛠️ Technical Details
 
-## 🏗️ Technical Details
+### Data Source
+- **Subgraph**: Graph Network Ethereum (`9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8`)
+- **Network**: Ethereum Mainnet
+- **API**: The Graph Gateway with personal API key
 
-### Built With
-- **Frontend**: Vanilla HTML, CSS, JavaScript
-- **Data**: The Graph Protocol subgraph
-- **Styling**: Modern CSS with gradients and animations
-- **Responsive**: Mobile-first design
+### Calculations
+- **Unrealized Rewards**: `(stakedTokens × currentExchangeRate / personalExchangeRate) - stakedTokens`
+- **Performance**: `unrealizedRewards / originalStake × 100%`
+- **Formatting**: Automatic K/M suffixes for large numbers
 
-### Architecture
-```
-User Input (Wallet Address)
-    ↓
-GraphQL Query to The Graph Network
-    ↓
-Data Processing & Calculations
-    ↓
-Dynamic UI Rendering
-```
+### Browser Support
+- Chrome/Edge 80+
+- Firefox 75+
+- Safari 13+
+- Mobile browsers
 
-### Key Calculations
-```javascript
-// Unrealized Rewards Calculation
-const originalShares = stakedAmount / personalExchangeRate;
-const currentValue = originalShares * currentExchangeRate;
-const unrealizedRewards = currentValue - stakedAmount;
-const performance = (unrealizedRewards / stakedAmount) * 100;
-```
+## 📝 Demo Addresses
 
-## 🔧 Local Development
+Try these addresses to see the dashboard in action:
 
-### Quick Start
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/PaulieB14/graph-delegator-dashboard.git
-   cd graph-delegator-dashboard
-   ```
+- `0x1908a3232eed9186b4a5b666075711d2db0200e5` - Single indexer strategy
+- `0x825b0a6393fc7c25f44f1985ad7857424bfb9ae6` - Diversified portfolio
 
-2. Open `index.html` in your browser or serve it locally:
-   ```bash
-   # Using Python
-   python -m http.server 8000
-   
-   # Using Node.js
-   npx serve .
-   
-   # Using PHP
-   php -S localhost:8000
-   ```
+## 🚨 Important Notes
 
-3. Navigate to `http://localhost:8000`
+### API Key Security
+- **Never share your API key** with anyone
+- **Don't commit API keys** to repositories
+- **Monitor your usage** in The Graph Studio
+- **Regenerate keys** if compromised
 
-### File Structure
-```
-graph-delegator-dashboard/
-├── index.html          # Main dashboard file
-├── README.md          # This file
-└── LICENSE            # MIT License
-```
+### Rate Limits
+- The Graph API has rate limits based on your plan
+- Free tier: 1,000 queries per month
+- Paid plans available for higher usage
 
-## 🚀 Production Implementation
-
-This is currently a **demo version** with sample data. For production use:
-
-### Option 1: Direct Subgraph Integration
-```javascript
-// Replace demo data with real GraphQL calls
-const GRAPH_ENDPOINT = 'https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-ethereum';
-
-async function fetchDelegatorData(address) {
-    const query = `
-        query GetDelegator($id: ID!) {
-            delegator(id: $id) {
-                totalStakedTokens
-                stakes { ... }
-            }
-        }
-    `;
-    
-    const response = await fetch(GRAPH_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, variables: { id: address.toLowerCase() } })
-    });
-    
-    return await response.json();
-}
-```
-
-### Option 2: Backend API
-Create a backend service using:
-- **Node.js/Express** with GraphQL client
-- **Python/Flask** with requests library
-- **Serverless functions** (Vercel, Netlify)
+### Data Accuracy
+- Data is fetched in real-time from The Graph Network
+- Exchange rates update as indexers collect rewards
+- Small delays possible due to blockchain confirmation times
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here are some ideas:
+Contributions welcome! This is a simple HTML/CSS/JS application.
 
-### Enhancements
-- [ ] Add wallet connection (MetaMask, WalletConnect)
+### Local Development
+1. Clone the repository
+2. Open `index.html` in your browser
+3. Enter your API key and test
+
+### Improvements Needed
+- [ ] Add more networks (Arbitrum, Polygon)
 - [ ] Historical performance charts
-- [ ] Indexer comparison tools
-- [ ] Export data to CSV
-- [ ] Dark mode toggle
-- [ ] Multi-network support (Arbitrum, Polygon)
-
-### Bug Reports
-Please open an issue with:
-- Browser and version
-- Wallet address tested
-- Expected vs actual behavior
-- Screenshots if applicable
-
-## 📈 Roadmap
-
-- **v1.1**: Live subgraph integration
-- **v1.2**: Wallet connection support
-- **v1.3**: Historical charts and analytics
-- **v2.0**: Multi-network support
+- [ ] Export functionality
+- [ ] Mobile app version
+- [ ] Notification system for rewards
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - feel free to use, modify, and distribute.
 
 ## 🙏 Acknowledgments
 
-- **The Graph Protocol** for providing the subgraph infrastructure
-- **Graph Network** community for delegation data
-- **Indexers** who secure and serve the network
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/PaulieB14/graph-delegator-dashboard/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/PaulieB14/graph-delegator-dashboard/discussions)
-- **The Graph Discord**: [Join Community](https://discord.gg/graphprotocol)
+- [The Graph Protocol](https://thegraph.com/) for the decentralized indexing network
+- [The Graph Studio](https://thegraph.com/studio/) for the API infrastructure
+- Graph community for delegation data and insights
 
 ---
 
-**⭐ Star this repo if you find it useful!**
+**Built with ❤️ for the Graph Protocol community**
 
-Built with ❤️ for the Graph Protocol community
+*Analyze your delegations, track your rewards, optimize your strategy!*
