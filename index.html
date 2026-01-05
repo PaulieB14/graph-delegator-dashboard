@@ -45,6 +45,66 @@
             opacity: 0.9;
         }
 
+        .api-key-section {
+            padding: 30px 40px;
+            background: #fff3cd;
+            border-bottom: 1px solid #ffeaa7;
+        }
+
+        .api-key-box {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .api-key-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            border: 2px solid #f39c12;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #e67e22;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+        }
+
+        .save-key-btn {
+            padding: 12px 20px;
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-key-btn:hover {
+            background: #e67e22;
+        }
+
+        .api-key-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #8b6914;
+        }
+
+        .api-key-info a {
+            color: #d68910;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .api-key-info a:hover {
+            text-decoration: underline;
+        }
+
         .search-section {
             padding: 40px;
             background: #f8fafc;
@@ -157,7 +217,7 @@
 
         .indexer-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
@@ -304,9 +364,32 @@
             color: white;
         }
 
+        .security-notice {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #92400e;
+        }
+
+        .security-notice h3 {
+            color: #78350f;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 768px) {
             .search-box {
                 flex-direction: column;
+            }
+            
+            .api-key-box {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .api-key-input {
+                min-width: auto;
             }
             
             .portfolio-stats {
@@ -328,6 +411,25 @@
         <div class="header">
             <h1>🏦 Graph Delegator Dashboard</h1>
             <p>Analyze your Graph Protocol delegations, track rewards, and monitor indexer performance</p>
+        </div>
+
+        <div class="api-key-section">
+            <div class="api-key-box">
+                <input 
+                    type="password" 
+                    class="api-key-input" 
+                    id="apiKeyInput"
+                    placeholder="Enter your Graph API key (stored locally in browser)"
+                >
+                <button class="save-key-btn" onclick="saveApiKey()">Save Key</button>
+            </div>
+            <div class="api-key-info">
+                🔑 <strong>Get your free API key:</strong> 
+                <a href="https://thegraph.com/studio/" target="_blank">The Graph Studio</a> → 
+                Create account → Get API key
+                <br>
+                🔒 <strong>Security:</strong> Your API key is stored locally in your browser only and never sent to any server except The Graph.
+            </div>
         </div>
 
         <div class="search-section">
@@ -356,18 +458,53 @@
         </div>
 
         <div class="results" id="results">
-            <div class="loading">
-                <p>👆 Enter a wallet address above to analyze delegations</p>
+            <div class="security-notice">
+                <h3>🔑 API Key Required</h3>
+                <p>To use this dashboard, you need a free API key from The Graph Studio. Your key is stored securely in your browser and never shared.</p>
+                <p><strong>Steps:</strong></p>
+                <ol>
+                    <li>Visit <a href="https://thegraph.com/studio/" target="_blank">The Graph Studio</a></li>
+                    <li>Create a free account</li>
+                    <li>Get your API key</li>
+                    <li>Enter it above and click "Save Key"</li>
+                </ol>
             </div>
         </div>
     </div>
 
     <script>
-        // The Graph Network Ethereum subgraph endpoint
-        const SUBGRAPH_URL = 'https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8';
-        
-        // For demo purposes, we'll use the public endpoint (rate limited)
-        const PUBLIC_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-ethereum';
+        // Store API key securely in localStorage
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            localStorage.setItem('graph_api_key', apiKey);
+            document.getElementById('apiKeyInput').value = '';
+            
+            // Update results section
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <p>✅ API key saved securely! Now enter a wallet address above to analyze delegations.</p>
+                </div>
+            `;
+        }
+
+        // Load saved API key on page load
+        function loadApiKey() {
+            const savedKey = localStorage.getItem('graph_api_key');
+            if (savedKey) {
+                document.getElementById('results').innerHTML = `
+                    <div class="loading">
+                        <p>👆 Enter a wallet address above to analyze delegations</p>
+                    </div>
+                `;
+                return savedKey;
+            }
+            return null;
+        }
 
         function setAddress(address) {
             document.getElementById('walletInput').value = address;
@@ -398,6 +535,17 @@
         }
 
         async function analyzeDelegations() {
+            const apiKey = localStorage.getItem('graph_api_key');
+            if (!apiKey) {
+                document.getElementById('results').innerHTML = `
+                    <div class="error">
+                        <h3>🔑 API Key Required</h3>
+                        <p>Please enter your Graph API key above first.</p>
+                    </div>
+                `;
+                return;
+            }
+
             const walletAddress = document.getElementById('walletInput').value.trim().toLowerCase();
             const resultsDiv = document.getElementById('results');
             const searchBtn = document.getElementById('searchBtn');
@@ -409,9 +557,12 @@
 
             searchBtn.disabled = true;
             searchBtn.textContent = 'Analyzing...';
-            resultsDiv.innerHTML = '<div class="loading">🔍 Fetching delegation data...</div>';
+            resultsDiv.innerHTML = '<div class="loading">🔍 Fetching delegation data from The Graph Network...</div>';
 
             try {
+                // Use The Graph Network Ethereum subgraph
+                const subgraphUrl = `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8`;
+
                 const query = `
                 query GetDelegatorInfo {
                   delegator(id: "${walletAddress}") {
@@ -450,7 +601,7 @@
                   }
                 }`;
 
-                const response = await fetch(PUBLIC_SUBGRAPH_URL, {
+                const response = await fetch(subgraphUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -480,12 +631,17 @@
 
             } catch (error) {
                 console.error('Error fetching data:', error);
+                let errorMessage = error.message;
+                
+                if (error.message.includes('auth error') || error.message.includes('API key')) {
+                    errorMessage = 'Invalid API key. Please check your API key and try again.';
+                }
+                
                 resultsDiv.innerHTML = `
                     <div class="error">
                         <h3>Error fetching data</h3>
-                        <p>Unable to fetch delegation data. This might be due to rate limiting on the public endpoint.</p>
-                        <p><strong>Error:</strong> ${error.message}</p>
-                        <p><em>For production use, consider using The Graph's hosted service with an API key.</em></p>
+                        <p><strong>Error:</strong> ${errorMessage}</p>
+                        <p>Please check your API key and try again.</p>
                     </div>
                 `;
             } finally {
@@ -608,12 +764,9 @@
             `;
         }
 
-        // Auto-analyze on page load if there's a default address
+        // Load API key on page load
         window.addEventListener('load', () => {
-            const defaultAddress = document.getElementById('walletInput').value;
-            if (defaultAddress) {
-                analyzeDelegations();
-            }
+            loadApiKey();
         });
     </script>
 </body>
