@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Protocol Delegator Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .search-section {
+            padding: 30px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .wallet-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .wallet-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .analyze-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            padding: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #64748b;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #64748b;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .summary-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .delegations-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .delegation-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .delegation-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .indexer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .indexer-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .indexer-url {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .indexer-url:hover {
+            text-decoration: underline;
+        }
+
+        .delegation-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .delegation-stat {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .delegation-stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+
+        .delegation-stat-label {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .gain {
+            color: #059669;
+        }
+
+        .loss {
+            color: #dc2626;
+        }
+
+        .neutral {
+            color: #64748b;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .indexer-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .demo-note {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .delegation-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .indexer-details {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Graph Delegator Dashboard</h1>
+            <p>Analyze your GRT delegations and track rewards in real-time</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="walletAddress" 
+                    class="wallet-input"
+                    placeholder="Enter wallet address (0x...)"
+                    value="0x1908a3232eed9186b4a5b666075711d2db0200e5"
+                />
+                <button id="analyzeBtn" class="analyze-btn" onclick="analyzeDelegations()">
+                    Analyze Delegations
+                </button>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="demo-note">
+                <strong>🚧 Demo Version:</strong> This is a prototype showing real data from The Graph Network. 
+                In production, this would connect directly to The Graph's subgraph API for live data.
+            </div>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Utility functions
+        function formatGRT(weiAmount) {
+            if (!weiAmount || weiAmount === "0") return "0 GRT";
+            
+            const grt = parseFloat(weiAmount) / 1e18;
+            
+            if (grt >= 1e6) return `${(grt/1e6).toFixed(2)}M GRT`;
+            if (grt >= 1e3) return `${(grt/1e3).toFixed(2)}K GRT`;
+            return `${grt.toFixed(2)} GRT`;
+        }
+
+        function formatPercentage(partsPerMillion) {
+            return `${(partsPerMillion / 10000).toFixed(2)}%`;
+        }
+
+        function calculateUnrealizedRewards(stakedTokens, personalRate, currentRate) {
+            if (!personalRate || personalRate === "0") return { amount: 0, percentage: 0 };
+            
+            const staked = parseFloat(stakedTokens) / 1e18;
+            const personal = parseFloat(personalRate);
+            const current = parseFloat(currentRate);
+            
+            const originalShares = staked / personal;
+            const currentValue = originalShares * current;
+            const unrealized = currentValue - staked;
+            const percentage = (unrealized / staked) * 100;
+            
+            return {
+                amount: unrealized * 1e18, // Convert back to wei for formatting
+                percentage: percentage
+            };
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return "Never";
+            return new Date(timestamp * 1000).toLocaleDateString();
+        }
+
+        // Demo data based on real subgraph queries
+        const demoData = {
+            "0x1908a3232eed9186b4a5b666075711d2db0200e5": {
+                wallet: "0x1908a3232eed9186b4a5b666075711d2db0200e5",
+                found: true,
+                summary: {
+                    totalStakedTokens: "5089255850000000000000000",
+                    totalUnstakedTokens: "0",
+                    totalRealizedRewards: "0",
+                    activeStakesCount: 1,
+                    stakesCount: 1
+                },
+                stakes: [
+                    {
+                        indexer: {
+                            id: "0x1a99dd7d916117a523f3ce6510dcfd6bceab11e7",
+                            defaultDisplayName: "p-ops",
+                            url: "https://ethindex.grt.pops.one/",
+                            delegatedTokens: "469387220717877613870737",
+                            indexingRewardCut: 920000,
+                            queryFeeCut: 1000000,
+                            delegationExchangeRate: "1.419317455942649357",
+                            rewardsEarned: "6723164439929462241060553"
+                        },
+                        stakedTokens: "5089255850000000000000000",
+                        unstakedTokens: "5164116666592211721898812",
+                        personalExchangeRate: "1.348889361224974591",
+                        realizedRewards: "0",
+                        lastDelegatedAt: 1691554667,
+                        lastUndelegatedAt: null
+                    }
+                ]
+            },
+            "0x825b0a6393fc7c25f44f1985ad7857424bfb9ae6": {
+                wallet: "0x825b0a6393fc7c25f44f1985ad7857424bfb9ae6",
+                found: true,
+                summary: {
+                    totalStakedTokens: "121765238586384092399022908",
+                    totalUnstakedTokens: "10704294802071007317481545",
+                    totalRealizedRewards: "702314012071007321452907585712797",
+                    activeStakesCount: 15,
+                    stakesCount: 18
+                },
+                stakes: [
+                    {
+                        indexer: {
+                            defaultDisplayName: "suntzu-indexer",
+                            url: "https://service.thegraph.suntzu.pro/",
+                            delegatedTokens: "152872333168795722723623",
+                            indexingRewardCut: 908000,
+                            queryFeeCut: 900000,
+                            delegationExchangeRate: "1.445253366617105398"
+                        },
+                        stakedTokens: "19428490395000000000000000",
+                        unstakedTokens: "21089528935340147738575677",
+                        personalExchangeRate: "1.22420775848485076",
+                        realizedRewards: "0",
+                        lastUndelegatedAt: null
+                    },
+                    {
+                        indexer: {
+                            defaultDisplayName: "stake-machine",
+                            url: "https://index0.graph.stake-machine.com/",
+                            delegatedTokens: "1398827456749341319581843",
+                            indexingRewardCut: 1000000,
+                            queryFeeCut: 1000000,
+                            delegationExchangeRate: "1.354722810483395578"
+                        },
+                        stakedTokens: "3010990395000000000000000",
+                        unstakedTokens: "3320977419994322030835798",
+                        personalExchangeRate: "1.208841201351895091",
+                        realizedRewards: "0",
+                        lastUndelegatedAt: null
+                    },
+                    {
+                        indexer: {
+                            defaultDisplayName: "nuviba",
+                            url: "https://indexer.0x62a0.xyz/",
+                            delegatedTokens: "28869716026302929520900266",
+                            indexingRewardCut: 1000000,
+                            queryFeeCut: 1000000,
+                            delegationExchangeRate: "1.46782143650452423"
+                        },
+                        stakedTokens: "10970990395000000000000000",
+                        unstakedTokens: "12242792924269892816972124",
+                        personalExchangeRate: "1.260939812595596762",
+                        realizedRewards: "0",
+                        lastUndelegatedAt: null
+                    }
+                ]
+            }
+        };
+
+        // Main analysis function
+        async function analyzeDelegations() {
+            const address = document.getElementById('walletAddress').value.trim();
+            const resultsDiv = document.getElementById('results');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            // Validate address
+            if (!address || !address.startsWith('0x') || address.length !== 42) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a valid Ethereum address (42 characters starting with 0x)</div>';
+                return;
+            }
+
+            // Show loading
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Fetching delegation data from The Graph Network...</p>
+                </div>
+            `;
+
+            try {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Get demo data
+                const data = demoData[address.toLowerCase()] || { wallet: address, found: false };
+                displayResults(data);
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Delegations';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!data.found) {
+                resultsDiv.innerHTML = `
+                    <div class="no-data">
+                        <h3>No delegation data found</h3>
+                        <p>This wallet address has never delegated GRT to any indexer.</p>
+                        <p><strong>Try these demo addresses:</strong></p>
+                        <p>• 0x1908a3232eed9186b4a5b666075711d2db0200e5 (Single indexer)</p>
+                        <p>• 0x825b0a6393fc7c25f44f1985ad7857424bfb9ae6 (Multi-indexer)</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const summary = data.summary;
+            const stakes = data.stakes || [];
+            
+            let html = `
+                <div class="summary-card">
+                    <h2 class="summary-title">Portfolio Summary</h2>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${formatGRT(summary.totalStakedTokens)}</div>
+                            <div class="stat-label">Total Staked</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${formatGRT(summary.totalRealizedRewards)}</div>
+                            <div class="stat-label">Realized Rewards</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${summary.activeStakesCount}</div>
+                            <div class="stat-label">Active Delegations</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${summary.stakesCount}</div>
+                            <div class="stat-label">Total Delegations</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (stakes.length > 0) {
+                html += '<div class="delegations-grid">';
+                
+                stakes.forEach(stake => {
+                    const indexer = stake.indexer;
+                    const isActive = !stake.lastUndelegatedAt;
+                    const unrealized = calculateUnrealizedRewards(
+                        stake.stakedTokens,
+                        stake.personalExchangeRate,
+                        indexer.delegationExchangeRate
+                    );
+                    
+                    const gainLossClass = unrealized.percentage > 0 ? 'gain' : 
+                                         unrealized.percentage < 0 ? 'loss' : 'neutral';
+                    const gainLossSymbol = unrealized.percentage > 0 ? '+' : '';
+                    
+                    html += `
+                        <div class="delegation-card">
+                            <div class="indexer-header">
+                                <div>
+                                    <div class="indexer-name">${indexer.defaultDisplayName || 'Unknown Indexer'}</div>
+                                    ${indexer.url ? `<a href="${indexer.url}" target="_blank" class="indexer-url">${indexer.url}</a>` : ''}
+                                </div>
+                                <span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">
+                                    ${isActive ? 'Active' : 'Closed'}
+                                </span>
+                            </div>
+                            
+                            <div class="delegation-stats">
+                                <div class="delegation-stat">
+                                    <div class="delegation-stat-value">${formatGRT(stake.stakedTokens)}</div>
+                                    <div class="delegation-stat-label">Original Amount</div>
+                                </div>
+                                <div class="delegation-stat">
+                                    <div class="delegation-stat-value">${formatGRT(stake.unstakedTokens)}</div>
+                                    <div class="delegation-stat-label">Current Value</div>
+                                </div>
+                                <div class="delegation-stat">
+                                    <div class="delegation-stat-value ${gainLossClass}">
+                                        ${gainLossSymbol}${formatGRT(Math.abs(unrealized.amount).toString())}
+                                    </div>
+                                    <div class="delegation-stat-label">Unrealized Rewards</div>
+                                </div>
+                                <div class="delegation-stat">
+                                    <div class="delegation-stat-value ${gainLossClass}">
+                                        ${gainLossSymbol}${unrealized.percentage.toFixed(2)}%
+                                    </div>
+                                    <div class="delegation-stat-label">Performance</div>
+                                </div>
+                                <div class="delegation-stat">
+                                    <div class="delegation-stat-value">${formatGRT(stake.realizedRewards)}</div>
+                                    <div class="delegation-stat-label">Realized Rewards</div>
+                                </div>
+                            </div>
+                            
+                            <div class="indexer-details">
+                                <span>Reward Cut: ${formatPercentage(indexer.indexingRewardCut)}</span>
+                                <span>Query Cut: ${formatPercentage(indexer.queryFeeCut)}</span>
+                                <span>Total Pool: ${formatGRT(indexer.delegatedTokens)}</span>
+                                <span>Last Delegated: ${formatDate(stake.lastDelegatedAt)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Auto-analyze on page load if there's a default address
+        window.addEventListener('load', () => {
+            const defaultAddress = document.getElementById('walletAddress').value;
+            if (defaultAddress) {
+                analyzeDelegations();
+            }
+        });
+
+        // Allow Enter key to trigger analysis
+        document.getElementById('walletAddress').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                analyzeDelegations();
+            }
+        });
+    </script>
+</body>
+</html>
