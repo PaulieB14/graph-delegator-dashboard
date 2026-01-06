@@ -405,7 +405,7 @@
 
         .indexer-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 24px;
             padding: 32px;
             background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.02) 100%);
@@ -440,7 +440,7 @@
 
         .performance-metrics {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
             padding: 32px;
             background: linear-gradient(135deg, #4BCA81 0%, #66D8FF 100%);
@@ -452,21 +452,21 @@
         .metric-item {
             text-align: center;
             background: rgba(248, 246, 255, 0.15);
-            padding: 20px;
+            padding: 24px;
             border-radius: 16px;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(248, 246, 255, 0.2);
         }
 
         .metric-value {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 8px;
             letter-spacing: -0.01em;
         }
 
         .metric-label {
-            font-size: 0.95rem;
+            font-size: 1rem;
             opacity: 0.9;
             font-weight: 500;
         }
@@ -626,6 +626,10 @@
             .container {
                 margin: 10px;
                 border-radius: 20px;
+            }
+
+            .performance-metrics {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -911,10 +915,9 @@
                 const indexerDescription = getIndexerDescription(indexer);
                 const createdDate = formatDate(indexer.createdAt);
                 
-                // Performance metrics
+                // Performance metrics - only show Total Rewards Earned and Query Fees Collected
                 const totalRewardsEarned = formatGRT(indexer.rewardsEarned);
                 const queryFeesCollected = formatGRT(indexer.queryFeesCollected);
-                const annualizedReturn = indexer.annualizedReturn ? parseFloat(indexer.annualizedReturn).toFixed(2) + '%' : 'N/A';
                 
                 delegationsHTML += `
                     <div class="delegation-card">
@@ -922,11 +925,10 @@
                             <div class="indexer-info">
                                 <div class="indexer-avatar">${indexerAvatar}</div>
                                 <div class="indexer-details-header">
-                                    <div class="indexer-name">🏭 ${indexerName}</div>
+                                    <div class="indexer-name">${indexerName}</div>
                                     ${indexerDescription ? `<div class="indexer-description">${indexerDescription}</div>` : ''}
                                     <div class="indexer-links">
                                         ${indexerWebsite !== '#' ? `<a href="${indexerWebsite}" target="_blank" class="indexer-url">🌐 Website</a>` : ''}
-                                        ${indexer.url !== indexerWebsite ? `<a href="${indexer.url}" target="_blank" class="indexer-url">🔗 Service</a>` : ''}
                                     </div>
                                     <div class="created-date">Active since ${createdDate}</div>
                                 </div>
@@ -968,10 +970,6 @@
                                 <span class="detail-label">Indexer Self Stake:</span>
                                 <span class="detail-value">${formatGRT(indexer.stakedTokens)} GRT</span>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Exchange Rate:</span>
-                                <span class="detail-value">${parseFloat(indexer.delegationExchangeRate).toFixed(4)}</span>
-                            </div>
                         </div>
 
                         <div class="performance-metrics">
@@ -982,10 +980,6 @@
                             <div class="metric-item">
                                 <div class="metric-value">${queryFeesCollected} GRT</div>
                                 <div class="metric-label">Query Fees Collected</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-value">${annualizedReturn}</div>
-                                <div class="metric-label">Annualized Return</div>
                             </div>
                         </div>
                     </div>
