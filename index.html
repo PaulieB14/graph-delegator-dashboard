@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Graph Delegator Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #6F4CFF 0%, #0C0A1D 100%);
             min-height: 100vh;
             padding: 20px;
@@ -24,15 +24,15 @@
             max-width: 1200px;
             margin: 0 auto;
             background: #F8F6FF;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px rgba(12, 10, 29, 0.25);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(12, 10, 29, 0.25);
             overflow: hidden;
         }
 
         .header {
             background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%);
             color: #F8F6FF;
-            padding: 50px 40px;
+            padding: 60px 40px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -45,13 +45,15 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(248,246,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(248,246,255,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(248,246,255,0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
         }
 
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes float {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
         }
 
         .header-content {
@@ -59,34 +61,86 @@
             z-index: 1;
         }
 
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            font-weight: 700;
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .graph-logo {
+            width: 56px;
+            height: 56px;
+            position: relative;
+        }
+
+        .logo-circle {
+            width: 56px;
+            height: 56px;
+            border: 3px solid #F8F6FF;
+            border-radius: 50%;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+        }
+
+        .logo-inner {
+            width: 32px;
+            height: 32px;
+            background: #F8F6FF;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .logo-inner::before,
+        .logo-inner::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #6F4CFF;
+            border-radius: 50%;
+        }
+
+        .logo-inner::before {
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .logo-inner::after {
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .brand-text {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
         .header p {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             opacity: 0.95;
             max-width: 600px;
             margin: 0 auto;
             line-height: 1.6;
-        }
-
-        .graph-logo {
-            width: 48px;
-            height: 48px;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            font-weight: 400;
         }
 
         .search-section {
-            padding: 50px 40px;
+            padding: 60px 40px;
             background: #F8F6FF;
-            border-bottom: 2px solid #494755;
+            border-bottom: 1px solid rgba(73, 71, 85, 0.2);
         }
 
         .search-box {
@@ -98,41 +152,42 @@
 
         .search-input {
             flex: 1;
-            padding: 18px 25px;
-            border: 3px solid #494755;
-            border-radius: 15px;
+            padding: 20px 28px;
+            border: 2px solid rgba(73, 71, 85, 0.3);
+            border-radius: 16px;
             font-size: 16px;
             background: white;
             color: #0C0A1D;
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(73, 71, 85, 0.1);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .search-input:focus {
             outline: none;
             border-color: #6F4CFF;
-            box-shadow: 0 0 0 4px rgba(111, 76, 255, 0.15);
+            box-shadow: 0 0 0 4px rgba(111, 76, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
         }
 
         .search-btn {
-            padding: 18px 35px;
+            padding: 20px 36px;
             background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%);
             color: #F8F6FF;
             border: none;
-            border-radius: 15px;
+            border-radius: 16px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            box-shadow: 0 8px 25px rgba(111, 76, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 8px 24px rgba(111, 76, 255, 0.3);
         }
 
         .search-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(111, 76, 255, 0.4);
+            box-shadow: 0 12px 32px rgba(111, 76, 255, 0.4);
         }
 
         .search-btn:disabled {
@@ -142,106 +197,128 @@
         }
 
         .results {
-            padding: 50px 40px;
+            padding: 60px 40px;
             background: #F8F6FF;
         }
 
         .portfolio-summary {
-            background: linear-gradient(135deg, #66D8FF 0%, #4C66FF 100%);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 40px;
+            background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%);
+            border-radius: 24px;
+            padding: 48px;
+            margin-bottom: 48px;
             color: #F8F6FF;
-            box-shadow: 0 15px 35px rgba(76, 102, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(111, 76, 255, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-summary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(248,246,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
         }
 
         .portfolio-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 25px;
+            margin-bottom: 32px;
             display: flex;
             align-items: center;
             gap: 12px;
+            position: relative;
+            z-index: 1;
         }
 
         .portfolio-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 32px;
+            position: relative;
+            z-index: 1;
         }
 
         .stat-item {
             text-align: center;
             background: rgba(248, 246, 255, 0.15);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(248, 246, 255, 0.2);
         }
 
         .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
 
         .stat-label {
             font-size: 1rem;
             opacity: 0.9;
+            font-weight: 500;
         }
 
         .delegation-card {
             background: white;
-            border: 2px solid #494755;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 25px rgba(12, 10, 29, 0.08);
-            transition: all 0.3s ease;
+            border: 1px solid rgba(73, 71, 85, 0.15);
+            border-radius: 24px;
+            padding: 36px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 32px rgba(12, 10, 29, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .delegation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(12, 10, 29, 0.15);
-            border-color: #6F4CFF;
+            transform: translateY(-8px);
+            box-shadow: 0 20px 48px rgba(12, 10, 29, 0.15);
+            border-color: rgba(111, 76, 255, 0.3);
         }
 
         .indexer-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 25px;
+            margin-bottom: 32px;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 24px;
         }
 
         .indexer-info {
             display: flex;
             align-items: flex-start;
-            gap: 20px;
+            gap: 24px;
             flex: 1;
         }
 
         .indexer-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 16px;
+            width: 88px;
+            height: 88px;
+            border-radius: 20px;
             background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #F8F6FF;
-            font-weight: 700;
-            font-size: 2rem;
+            font-weight: 800;
+            font-size: 2.2rem;
             overflow: hidden;
             flex-shrink: 0;
-            box-shadow: 0 8px 20px rgba(111, 76, 255, 0.3);
+            box-shadow: 0 12px 24px rgba(111, 76, 255, 0.3);
+            border: 2px solid rgba(248, 246, 255, 0.2);
         }
 
         .indexer-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 16px;
+            border-radius: 18px;
         }
 
         .indexer-details-header {
@@ -250,25 +327,26 @@
         }
 
         .indexer-name {
-            font-size: 1.6rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: #0C0A1D;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
         }
 
         .indexer-description {
             font-size: 1rem;
             color: #494755;
-            line-height: 1.5;
-            margin-bottom: 12px;
-            max-height: 80px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            max-height: 96px;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .indexer-links {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             flex-wrap: wrap;
         }
 
@@ -280,70 +358,75 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 15px;
-            background: rgba(111, 76, 255, 0.1);
-            border-radius: 10px;
-            transition: all 0.3s ease;
+            padding: 10px 16px;
+            background: rgba(111, 76, 255, 0.08);
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(111, 76, 255, 0.2);
         }
 
         .indexer-url:hover {
             background: #6F4CFF;
             color: #F8F6FF;
             transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(111, 76, 255, 0.3);
         }
 
         .status-badge {
-            padding: 12px 20px;
-            border-radius: 25px;
+            padding: 14px 24px;
+            border-radius: 32px;
             font-size: 0.9rem;
             font-weight: 700;
             text-transform: uppercase;
             white-space: nowrap;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            letter-spacing: 0.02em;
         }
 
         .status-active {
-            background: #4BCA81;
+            background: linear-gradient(135deg, #4BCA81 0%, #66D8FF 100%);
             color: white;
         }
 
         .status-inactive {
-            background: #FF79C6;
+            background: linear-gradient(135deg, #FF79C6 0%, #FF6B9D 100%);
             color: white;
         }
 
         .delegation-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
         .delegation-stat {
             text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.05) 100%);
-            border: 2px solid #494755;
-            border-radius: 15px;
-            transition: all 0.3s ease;
+            padding: 24px;
+            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.04) 100%);
+            border: 1px solid rgba(73, 71, 85, 0.15);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .delegation-stat:hover {
-            border-color: #6F4CFF;
-            transform: translateY(-3px);
+            border-color: rgba(111, 76, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(111, 76, 255, 0.1);
         }
 
         .delegation-stat-value {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: #0C0A1D;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
         }
 
         .delegation-stat-label {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #494755;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .gain-positive {
@@ -356,22 +439,22 @@
 
         .indexer-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 25px;
-            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.03) 100%);
-            border: 2px solid #494755;
-            border-radius: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            padding: 32px;
+            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.02) 100%);
+            border: 1px solid rgba(73, 71, 85, 0.15);
+            border-radius: 20px;
             font-size: 1rem;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .detail-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(73, 71, 85, 0.2);
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(73, 71, 85, 0.1);
         }
 
         .detail-item:last-child {
@@ -391,119 +474,127 @@
 
         .performance-metrics {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            padding: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            padding: 32px;
             background: linear-gradient(135deg, #4BCA81 0%, #66D8FF 100%);
-            border-radius: 15px;
+            border-radius: 20px;
             color: white;
-            box-shadow: 0 10px 30px rgba(75, 202, 129, 0.2);
+            box-shadow: 0 16px 32px rgba(75, 202, 129, 0.25);
         }
 
         .metric-item {
             text-align: center;
             background: rgba(248, 246, 255, 0.15);
-            padding: 15px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(248, 246, 255, 0.2);
         }
 
         .metric-value {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
         }
 
         .metric-label {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             opacity: 0.9;
+            font-weight: 500;
         }
 
         .powered-by {
             background: linear-gradient(135deg, #4BCA81 0%, #66D8FF 100%);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 30px 0;
+            border-radius: 24px;
+            padding: 40px;
+            margin: 40px 0;
             color: white;
             text-align: center;
-            box-shadow: 0 15px 35px rgba(75, 202, 129, 0.2);
+            box-shadow: 0 20px 40px rgba(75, 202, 129, 0.25);
         }
 
         .powered-by h3 {
-            margin-bottom: 15px;
-            font-size: 1.5rem;
+            margin-bottom: 16px;
+            font-size: 1.75rem;
+            font-weight: 700;
         }
 
         .loading {
             text-align: center;
-            padding: 60px;
+            padding: 80px;
             color: #494755;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            font-weight: 500;
         }
 
         .error {
             background: linear-gradient(135deg, #FF79C6 0%, #FF6B9D 100%);
             color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 25px 0;
-            box-shadow: 0 10px 30px rgba(255, 121, 198, 0.2);
+            border-radius: 20px;
+            padding: 32px;
+            margin: 32px 0;
+            box-shadow: 0 16px 32px rgba(255, 121, 198, 0.25);
         }
 
         .error h3 {
-            margin-bottom: 10px;
-            font-size: 1.3rem;
+            margin-bottom: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
         }
 
         .demo-addresses {
-            margin-top: 25px;
-            padding: 25px;
+            margin-top: 32px;
+            padding: 32px;
             background: white;
-            border-radius: 15px;
-            border: 2px solid #494755;
-            box-shadow: 0 5px 20px rgba(73, 71, 85, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(73, 71, 85, 0.15);
+            box-shadow: 0 8px 24px rgba(73, 71, 85, 0.08);
         }
 
         .demo-title {
             font-weight: 700;
             color: #0C0A1D;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
         }
 
         .demo-address {
             display: inline-block;
-            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.05) 100%);
-            padding: 12px 18px;
+            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.04) 100%);
+            padding: 14px 20px;
             margin: 8px;
-            border-radius: 12px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.85rem;
+            border-radius: 16px;
+            font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid #494755;
-            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(73, 71, 85, 0.15);
+            font-weight: 600;
         }
 
         .demo-address:hover {
             background: #6F4CFF;
             color: #F8F6FF;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(111, 76, 255, 0.3);
+            box-shadow: 0 8px 20px rgba(111, 76, 255, 0.3);
         }
 
         .created-date {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #494755;
             margin-top: 8px;
             font-weight: 500;
         }
 
         @media (max-width: 768px) {
+            .brand-text {
+                font-size: 2.5rem;
+            }
+            
             .header h1 {
-                font-size: 2.2rem;
-                flex-direction: column;
-                gap: 10px;
+                font-size: 1.8rem;
             }
             
             .search-box {
@@ -528,14 +619,14 @@
             }
 
             .indexer-avatar {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5rem;
+                width: 72px;
+                height: 72px;
+                font-size: 1.8rem;
             }
 
             .container {
                 margin: 10px;
-                border-radius: 15px;
+                border-radius: 20px;
             }
         }
     </style>
@@ -544,28 +635,15 @@
     <div class="container">
         <div class="header">
             <div class="header-content">
-                <h1>
-                    <svg class="graph-logo" viewBox="0 0 200 200" fill="currentColor">
-                        <defs>
-                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#F8F6FF"/>
-                                <stop offset="100%" style="stop-color:#66D8FF"/>
-                            </linearGradient>
-                        </defs>
-                        <circle cx="100" cy="100" r="95" fill="none" stroke="url(#logoGradient)" stroke-width="10"/>
-                        <circle cx="100" cy="100" r="60" fill="none" stroke="url(#logoGradient)" stroke-width="8"/>
-                        <circle cx="100" cy="100" r="25" fill="url(#logoGradient)"/>
-                        <circle cx="70" cy="70" r="8" fill="url(#logoGradient)"/>
-                        <circle cx="130" cy="70" r="8" fill="url(#logoGradient)"/>
-                        <circle cx="70" cy="130" r="8" fill="url(#logoGradient)"/>
-                        <circle cx="130" cy="130" r="8" fill="url(#logoGradient)"/>
-                        <line x1="70" y1="70" x2="100" y2="100" stroke="url(#logoGradient)" stroke-width="4"/>
-                        <line x1="130" y1="70" x2="100" y2="100" stroke="url(#logoGradient)" stroke-width="4"/>
-                        <line x1="70" y1="130" x2="100" y2="100" stroke="url(#logoGradient)" stroke-width="4"/>
-                        <line x1="130" y1="130" x2="100" y2="100" stroke="url(#logoGradient)" stroke-width="4"/>
-                    </svg>
-                    The Graph Delegator Dashboard
-                </h1>
+                <div class="brand-logo">
+                    <div class="graph-logo">
+                        <div class="logo-circle">
+                            <div class="logo-inner"></div>
+                        </div>
+                    </div>
+                    <div class="brand-text">The Graph</div>
+                </div>
+                <h1>Delegator Dashboard</h1>
                 <p>Analyze your delegations, track rewards, and monitor indexer performance on The Graph Network</p>
             </div>
         </div>
@@ -854,8 +932,8 @@
                     </div>
                 </div>
                 
-                <h2 style="margin-bottom: 30px; color: #0C0A1D; font-size: 1.8rem; font-weight: 700;">🎯 Active Delegations</h2>
-                ${delegationsHTML || '<p style="text-align: center; color: #494755; font-size: 1.1rem;">No active delegations found.</p>'}
+                <h2 style="margin-bottom: 32px; color: #0C0A1D; font-size: 2rem; font-weight: 700;">🎯 Active Delegations</h2>
+                ${delegationsHTML || '<p style="text-align: center; color: #494755; font-size: 1.2rem;">No active delegations found.</p>'}
             `;
         }
 
