@@ -200,7 +200,7 @@
 
         .delegation-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -493,11 +493,6 @@
                 );
                 const unrealizedRewardsFormatted = formatGRT(unrealizedRewards.toString());
                 
-                // Calculate percentage gain
-                const percentageGain = unrealizedRewards / parseFloat(stake.stakedTokens);
-                const gainClass = percentageGain >= 0 ? 'gain-positive' : 'gain-negative';
-                const percentageGainFormatted = (percentageGain * 100).toFixed(2) + '%';
-                
                 const indexerName = indexer.defaultDisplayName || `Indexer ${indexer.id.substring(0, 8)}...`;
                 const indexerUrl = indexer.url || '#';
                 
@@ -519,16 +514,12 @@
                                 <div class="delegation-stat-label">Original Amount</div>
                             </div>
                             <div class="delegation-stat">
-                                <div class="delegation-stat-value ${gainClass}">${unrealizedRewardsFormatted} GRT</div>
+                                <div class="delegation-stat-value gain-positive">${unrealizedRewardsFormatted} GRT</div>
                                 <div class="delegation-stat-label">Unrealized Rewards</div>
                             </div>
                             <div class="delegation-stat">
                                 <div class="delegation-stat-value">${realizedRewards} GRT</div>
                                 <div class="delegation-stat-label">Realized Rewards</div>
-                            </div>
-                            <div class="delegation-stat">
-                                <div class="delegation-stat-value ${gainClass}">${percentageGainFormatted}</div>
-                                <div class="delegation-stat-label">Performance</div>
                             </div>
                         </div>
                         
