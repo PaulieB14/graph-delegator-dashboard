@@ -1,5 +1,3 @@
-const fetch = require('node-fetch');
-
 module.exports = async (req, res) => {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,11 +18,15 @@ module.exports = async (req, res) => {
     }
 
     try {
+        console.log('Request received:', req.method);
+        console.log('Request body:', req.body);
+
         // Parse request body
         let walletAddress;
         try {
             const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
             walletAddress = body.walletAddress;
+            console.log('Parsed wallet address:', walletAddress);
         } catch (parseError) {
             console.error('Body parsing error:', parseError);
             return res.status(400).json({ 
@@ -34,6 +36,7 @@ module.exports = async (req, res) => {
 
         // Validate inputs
         const GRAPH_API_KEY = process.env.GRAPH_API_KEY;
+        console.log('API key present:', !!GRAPH_API_KEY);
 
         if (!GRAPH_API_KEY) {
             console.error('Missing GRAPH_API_KEY environment variable');
@@ -55,64 +58,48 @@ module.exports = async (req, res) => {
         }
 
         const subgraphUrl = `https://gateway.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8`;
+        console.log('Subgraph URL configured');
 
-        const query = `
-            query GetDelegatorInfo($walletAddress: String!) {
-                delegator(id: $walletAddress) {
+        // Use the working query structure from MCP testing
+        const query = `{
+            delegator(id: "${walletAddress.toLowerCase()}") {
+                id
+                totalStakedTokens
+                totalRealizedRewards
+                stakesCount
+                activeStakesCount
+                stakes(first: 50) {
                     id
-                    totalStakedTokens
-                    totalUnstakedTokens
-                    totalRealizedRewards
-                    stakesCount
-                    activeStakesCount
-                    createdAt
-                    stakes(first: 50) {
+                    stakedTokens
+                    realizedRewards
+                    personalExchangeRate
+                    lastDelegatedAt
+                    lastUndelegatedAt
+                    indexer {
                         id
-                        indexer {
+                        url
+                        defaultDisplayName
+                        stakedTokens
+                        delegatedTokens
+                        indexingRewardCut
+                        queryFeeCut
+                        delegationExchangeRate
+                        queryFeesCollected
+                        rewardsEarned
+                        createdAt
+                        account {
                             id
-                            url
-                            defaultDisplayName
-                            stakedTokens
-                            delegatedTokens
-                            indexingRewardCut
-                            queryFeeCut
-                            delegationExchangeRate
-                            queryFeesCollected
-                            rewardsEarned
-                            allocatedTokens
-                            unstakedTokens
-                            lockedTokens
-                            totalReturn
-                            annualizedReturn
-                            stakingEfficiency
-                            geoHash
-                            createdAt
-                            account {
-                                id
-                                metadata {
-                                    displayName
-                                    description
-                                    image
-                                    website
-                                    codeRepository
-                                    isOrganization
-                                }
+                            metadata {
+                                displayName
+                                image
+                                website
+                                description
                             }
                         }
-                        stakedTokens
-                        unstakedTokens
-                        lockedTokens
-                        lockedUntil
-                        shareAmount
-                        personalExchangeRate
-                        realizedRewards
-                        createdAt
-                        lastDelegatedAt
-                        lastUndelegatedAt
                     }
                 }
             }
-        `;
+        }`;
 
         console.log('Making request to subgraph for wallet:', walletAddress);
 
@@ -123,11 +110,7 @@ module.exports = async (req, res) => {
                 'Accept': 'application/json',
                 'User-Agent': 'Graph-Delegator-Dashboard/1.0'
             },
-            body: JSON.stringify({
-                query,
-                variables: { walletAddress: walletAddress.toLowerCase() }
-            }),
-            timeout: 30000 // 30 second timeout
+            body: JSON.stringify({ query })
         });
 
         console.log('Subgraph response status:', response.status);
@@ -137,7 +120,7 @@ module.exports = async (req, res) => {
             console.error('Subgraph HTTP error:', response.status, errorText);
             return res.status(502).json({ 
                 error: `Subgraph request failed with status ${response.status}`,
-                details: errorText.substring(0, 200) // Limit error message length
+                details: errorText.substring(0, 200)
             });
         }
 
@@ -145,6 +128,7 @@ module.exports = async (req, res) => {
         try {
             const responseText = await response.text();
             console.log('Raw response length:', responseText.length);
+            console.log('Response preview:', responseText.substring(0, 200));
             data = JSON.parse(responseText);
         } catch (jsonError) {
             console.error('JSON parsing error:', jsonError);
@@ -172,10 +156,13 @@ module.exports = async (req, res) => {
         }
 
         console.log('Successfully processed request for wallet:', walletAddress);
+        console.log('Delegator found:', !!data.data.delegator);
+        
         return res.status(200).json(data);
 
     } catch (error) {
         console.error('Unexpected error in delegator API:', error);
+        console.error('Error stack:', error.stack);
         
         // Handle different types of errors
         if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
