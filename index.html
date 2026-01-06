@@ -488,6 +488,11 @@
             color: white;
         }
 
+        .status-mixed {
+            background: linear-gradient(135deg, #FFA801 0%, #FF6B9D 100%);
+            color: white;
+        }
+
         .delegation-stats {
             display: grid;
             grid-template-columns: 1fr;
@@ -523,6 +528,16 @@
             color: var(--text-secondary);
             font-weight: 600;
             transition: color 0.3s ease;
+        }
+
+        .stake-count-badge {
+            background: rgba(111, 76, 255, 0.1);
+            color: #6F4CFF;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
         }
 
         .gain-positive {
@@ -896,7 +911,7 @@
                     class="search-input" 
                     id="walletInput"
                     placeholder="Enter wallet address (0x...)"
-                    value="0xc69de45ec5e4ef1df6bef14229660c9211917d86"
+                    value="0x25a981d1fdefcde326dd0f868795b290c88430fa"
                 >
                 <button class="search-btn" id="searchBtn" onclick="analyzeDelegations()">
                     Analyze Delegations
@@ -905,14 +920,14 @@
             
             <div class="demo-addresses">
                 <div class="demo-title">📋 Try these Arbitrum demo addresses:</div>
+                <div class="demo-address" onclick="setAddress('0x25a981d1fdefcde326dd0f868795b290c88430fa')">
+                    0x25a981d1fdefcde326dd0f868795b290c88430fa
+                </div>
                 <div class="demo-address" onclick="setAddress('0xc69de45ec5e4ef1df6bef14229660c9211917d86')">
                     0xc69de45ec5e4ef1df6bef14229660c9211917d86
                 </div>
                 <div class="demo-address" onclick="setAddress('0x9c90de4d1eab3d7ec5dca89ddbebc2e62d3ac311')">
                     0x9c90de4d1eab3d7ec5dca89ddbebc2e62d3ac311
-                </div>
-                <div class="demo-address" onclick="setAddress('0xc773ff2c330eed0093d809d95870adebc8300ffb')">
-                    0xc773ff2c330eed0093d809d95870adebc8300ffb
                 </div>
             </div>
         </div>
@@ -1079,6 +1094,46 @@
             `;
         }
 
+        // Group stakes by indexer and combine their data
+        function groupStakesByIndexer(stakes) {
+            const indexerGroups = new Map();
+            
+            stakes.forEach(stake => {
+                const indexerId = stake.indexer.id;
+                
+                if (!indexerGroups.has(indexerId)) {
+                    indexerGroups.set(indexerId, {
+                        indexer: stake.indexer,
+                        stakes: [],
+                        totalStakedTokens: 0,
+                        totalUnstakedTokens: 0,
+                        totalRealizedRewards: 0,
+                        hasActiveStakes: false,
+                        hasInactiveStakes: false,
+                        activeStakeCount: 0,
+                        totalStakeCount: 0
+                    });
+                }
+                
+                const group = indexerGroups.get(indexerId);
+                group.stakes.push(stake);
+                group.totalStakedTokens += parseFloat(stake.stakedTokens);
+                group.totalUnstakedTokens += parseFloat(stake.unstakedTokens);
+                group.totalRealizedRewards += parseFloat(stake.realizedRewards);
+                group.totalStakeCount++;
+                
+                const isActive = !stake.lastUndelegatedAt;
+                if (isActive) {
+                    group.hasActiveStakes = true;
+                    group.activeStakeCount++;
+                } else {
+                    group.hasInactiveStakes = true;
+                }
+            });
+            
+            return Array.from(indexerGroups.values());
+        }
+
         async function analyzeDelegations() {
             const walletAddress = document.getElementById('walletInput').value.trim().toLowerCase();
             const resultsDiv = document.getElementById('results');
@@ -1206,23 +1261,34 @@
             const activeStakes = delegator.activeStakesCount;
             const totalStakes = delegator.stakesCount;
 
+            // Group stakes by indexer
+            const indexerGroups = groupStakesByIndexer(delegator.stakes);
+            const uniqueIndexers = indexerGroups.length;
+
             let delegationsHTML = '';
             let hasInactive = false;
             
-            delegator.stakes.forEach(stake => {
-                const indexer = stake.indexer;
-                const isActive = !stake.lastUndelegatedAt;
-                if (!isActive) hasInactive = true;
+            indexerGroups.forEach(group => {
+                const indexer = group.indexer;
+                const hasActive = group.hasActiveStakes;
+                const hasInactiveOnly = group.hasInactiveStakes && !group.hasActiveStakes;
                 
-                const stakedAmount = formatGRT(stake.stakedTokens);
-                const realizedRewards = formatGRT(stake.realizedRewards);
+                if (hasInactiveOnly) hasInactive = true;
                 
-                const unrealizedRewards = calculateUnrealizedRewards(
-                    stake.stakedTokens,
-                    stake.personalExchangeRate,
-                    indexer.delegationExchangeRate
-                );
-                const unrealizedRewardsFormatted = formatGRT(unrealizedRewards.toString());
+                const stakedAmount = formatGRT(group.totalStakedTokens.toString());
+                const realizedRewards = formatGRT(group.totalRealizedRewards.toString());
+                
+                // Calculate combined unrealized rewards for all stakes to this indexer
+                let totalUnrealizedRewards = 0;
+                group.stakes.forEach(stake => {
+                    const unrealized = calculateUnrealizedRewards(
+                        stake.stakedTokens,
+                        stake.personalExchangeRate,
+                        indexer.delegationExchangeRate
+                    );
+                    totalUnrealizedRewards += unrealized;
+                });
+                const unrealizedRewardsFormatted = formatGRT(totalUnrealizedRewards.toString());
                 
                 const indexerName = getIndexerName(indexer);
                 const indexerWebsite = getIndexerWebsite(indexer);
@@ -1230,13 +1296,29 @@
                 const indexerDescription = getIndexerDescription(indexer);
                 const createdDate = formatDate(indexer.createdAt);
                 
+                // Determine status
+                let statusClass, statusText;
+                if (hasActive && group.hasInactiveStakes) {
+                    statusClass = 'status-mixed';
+                    statusText = '🔄 Mixed';
+                } else if (hasActive) {
+                    statusClass = 'status-active';
+                    statusText = '✅ Active';
+                } else {
+                    statusClass = 'status-inactive';
+                    statusText = '❌ Inactive';
+                }
+                
+                const stakeCountBadge = group.totalStakeCount > 1 ? 
+                    `<span class="stake-count-badge">${group.totalStakeCount} stakes</span>` : '';
+                
                 delegationsHTML += `
-                    <div class="delegation-card ${!isActive ? 'inactive' : ''}">
+                    <div class="delegation-card ${hasInactiveOnly ? 'inactive' : ''}">
                         <div class="indexer-header">
                             <div class="indexer-info">
                                 <div class="indexer-avatar">${indexerAvatar}</div>
                                 <div class="indexer-details-header">
-                                    <div class="indexer-name">${indexerName}</div>
+                                    <div class="indexer-name">${indexerName}${stakeCountBadge}</div>
                                     ${indexerDescription ? `<div class="indexer-description">${indexerDescription}</div>` : ''}
                                     <div class="indexer-links">
                                         ${indexerWebsite !== '#' ? `<a href="${indexerWebsite}" target="_blank" class="indexer-url">🌐 Website</a>` : ''}
@@ -1244,15 +1326,15 @@
                                     <div class="created-date">Active since ${createdDate}</div>
                                 </div>
                             </div>
-                            <div class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">
-                                ${isActive ? '✅ Active' : '❌ Inactive'}
+                            <div class="status-badge ${statusClass}">
+                                ${statusText}
                             </div>
                         </div>
                         
                         <div class="delegation-stats">
                             <div class="delegation-stat">
                                 <div class="delegation-stat-value">${stakedAmount} GRT</div>
-                                <div class="delegation-stat-label">Original Amount</div>
+                                <div class="delegation-stat-label">Total Staked</div>
                             </div>
                             <div class="delegation-stat">
                                 <div class="delegation-stat-value gain-positive">${unrealizedRewardsFormatted} GRT</div>
@@ -1291,18 +1373,18 @@
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">${activeStakes}</div>
-                            <div class="stat-label">Active Delegations</div>
+                            <div class="stat-label">Active Stakes</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">${totalStakes}</div>
-                            <div class="stat-label">Total Delegations</div>
+                            <div class="stat-value">${uniqueIndexers}</div>
+                            <div class="stat-label">Unique Indexers</div>
                         </div>
                     </div>
                 </div>
                 
                 ${filtersHTML}
                 
-                <h2 class="section-title">🎯 Delegations</h2>
+                <h2 class="section-title">🎯 Indexers (${uniqueIndexers} total, ${totalStakes} stakes)</h2>
                 ${delegationsHTML || '<p style="text-align: center; color: var(--text-secondary); font-size: 1.1rem;">No delegations found.</p>'}
             `;
 
