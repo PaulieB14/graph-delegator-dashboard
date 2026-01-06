@@ -43,13 +43,23 @@ module.exports = async (req, res) => {
                         delegationExchangeRate
                         queryFeesCollected
                         rewardsEarned
+                        allocatedTokens
+                        unstakedTokens
+                        lockedTokens
+                        totalReturn
+                        annualizedReturn
+                        stakingEfficiency
                         geoHash
+                        createdAt
                         account {
+                            id
                             metadata {
                                 displayName
                                 description
                                 image
                                 website
+                                codeRepository
+                                isOrganization
                             }
                         }
                     }
