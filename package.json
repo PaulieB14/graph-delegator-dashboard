@@ -1,22 +1,32 @@
 {
   "name": "graph-delegator-dashboard",
   "version": "1.0.0",
-  "description": "A dashboard to analyze Graph Protocol delegator positions and track rewards",
+  "description": "A dashboard for analyzing delegator information on The Graph Network",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev",
-    "start": "vercel dev"
+    "start": "serve .",
+    "dev": "serve ."
   },
-  "keywords": [
-    "graph-protocol",
-    "delegator",
-    "dashboard",
-    "defi",
-    "crypto"
-  ],
-  "author": "PaulieB14",
-  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "serve": "^14.0.0"
+  },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PaulieB14/graph-delegator-dashboard.git"
+  },
+  "keywords": [
+    "the-graph",
+    "delegator",
+    "dashboard",
+    "blockchain",
+    "indexer"
+  ],
+  "author": "PaulieB14",
+  "license": "MIT"
 }
