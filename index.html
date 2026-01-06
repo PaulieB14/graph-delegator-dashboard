@@ -1076,7 +1076,64 @@
                 return indexer.account.metadata.displayName;
             }
             
-            // Fallback to shortened address
+            // Try to extract name from website URL
+            if (indexer.account && indexer.account.metadata && indexer.account.metadata.website) {
+                const website = indexer.account.metadata.website;
+                // Extract domain name and clean it up
+                try {
+                    const url = new URL(website);
+                    let domain = url.hostname.replace('www.', '');
+                    // Remove common TLDs and clean up
+                    domain = domain.replace(/\.(com|io|tech|co|app|org|net)$/, '');
+                    // Capitalize first letter
+                    return domain.charAt(0).toUpperCase() + domain.slice(1);
+                } catch (e) {
+                    // If URL parsing fails, continue to next fallback
+                }
+            }
+            
+            // Try to extract name from description (look for common patterns)
+            if (indexer.account && indexer.account.metadata && indexer.account.metadata.description) {
+                const description = indexer.account.metadata.description;
+                
+                // Look for patterns like "CompanyName is..." or "CompanyName has been..."
+                const patterns = [
+                    /^([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+(?:is|has|team|operates)/i,
+                    /^(?:The\s+)?([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+team/i,
+                    /^([A-Z][a-zA-Z]+)\s+(?:is|has)/i
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = description.match(pattern);
+                    if (match && match[1]) {
+                        return match[1].trim();
+                    }
+                }
+            }
+            
+            // Try to extract from indexer URL
+            if (indexer.url) {
+                try {
+                    const url = new URL(indexer.url);
+                    let domain = url.hostname.replace('www.', '');
+                    // Look for subdomain patterns that might indicate the indexer name
+                    const parts = domain.split('.');
+                    if (parts.length > 2) {
+                        // Use the first part if it's not common service words
+                        const firstPart = parts[0];
+                        if (!['service', 'api', 'indexer', 'graph', 'thegraph', 'arb', 'arbitrum'].includes(firstPart.toLowerCase())) {
+                            return firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
+                        }
+                    }
+                    // Otherwise use the main domain
+                    domain = domain.replace(/\.(com|io|tech|co|app|org|net)$/, '');
+                    return domain.charAt(0).toUpperCase() + domain.slice(1);
+                } catch (e) {
+                    // If URL parsing fails, continue to final fallback
+                }
+            }
+            
+            // Final fallback to shortened address
             return `Indexer ${indexer.id.substring(0, 8)}...`;
         }
 
