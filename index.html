@@ -395,8 +395,11 @@
             }
         }
 
-        function formatPercentage(value) {
-            return (value * 100).toFixed(2) + '%';
+        function formatPercentage(partsPerMillion) {
+            // Convert parts per million to percentage
+            // 1,000,000 parts per million = 100%
+            const percentage = (partsPerMillion / 1000000) * 100;
+            return percentage.toFixed(2) + '%';
         }
 
         function calculateUnrealizedRewards(stakedTokens, personalExchangeRate, currentExchangeRate) {
@@ -493,6 +496,7 @@
                 // Calculate percentage gain
                 const percentageGain = unrealizedRewards / parseFloat(stake.stakedTokens);
                 const gainClass = percentageGain >= 0 ? 'gain-positive' : 'gain-negative';
+                const percentageGainFormatted = (percentageGain * 100).toFixed(2) + '%';
                 
                 const indexerName = indexer.defaultDisplayName || `Indexer ${indexer.id.substring(0, 8)}...`;
                 const indexerUrl = indexer.url || '#';
@@ -523,7 +527,7 @@
                                 <div class="delegation-stat-label">Realized Rewards</div>
                             </div>
                             <div class="delegation-stat">
-                                <div class="delegation-stat-value ${gainClass}">${formatPercentage(percentageGain)}</div>
+                                <div class="delegation-stat-value ${gainClass}">${percentageGainFormatted}</div>
                                 <div class="delegation-stat-label">Performance</div>
                             </div>
                         </div>
@@ -531,11 +535,11 @@
                         <div class="indexer-details">
                             <div class="detail-item">
                                 <span class="detail-label">Indexing Reward Cut:</span>
-                                <span class="detail-value">${formatPercentage(indexer.indexingRewardCut / 1000000)}</span>
+                                <span class="detail-value">${formatPercentage(indexer.indexingRewardCut)}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Query Fee Cut:</span>
-                                <span class="detail-value">${formatPercentage(indexer.queryFeeCut / 1000000)}</span>
+                                <span class="detail-value">${formatPercentage(indexer.queryFeeCut)}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Total Delegated:</span>
