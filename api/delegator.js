@@ -5,22 +5,53 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept');
+    res.setHeader('Content-Type', 'application/json');
 
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
+    // Only allow POST requests
+    if (req.method !== 'POST') {
+        return res.status(405).json({ 
+            error: 'Method not allowed. Use POST.' 
+        });
+    }
+
     try {
-        const { walletAddress } = req.body;
+        // Parse request body
+        let walletAddress;
+        try {
+            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            walletAddress = body.walletAddress;
+        } catch (parseError) {
+            console.error('Body parsing error:', parseError);
+            return res.status(400).json({ 
+                error: 'Invalid JSON in request body' 
+            });
+        }
+
+        // Validate inputs
         const GRAPH_API_KEY = process.env.GRAPH_API_KEY;
 
         if (!GRAPH_API_KEY) {
-            return res.status(500).json({ error: 'API key not configured on the server.' });
+            console.error('Missing GRAPH_API_KEY environment variable');
+            return res.status(500).json({ 
+                error: 'Server configuration error: API key not found' 
+            });
         }
 
         if (!walletAddress) {
-            return res.status(400).json({ error: 'Wallet address is required.' });
+            return res.status(400).json({ 
+                error: 'Wallet address is required in request body' 
+            });
+        }
+
+        if (!walletAddress.startsWith('0x') || walletAddress.length !== 42) {
+            return res.status(400).json({ 
+                error: 'Invalid wallet address format' 
+            });
         }
 
         const subgraphUrl = `https://gateway.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8`;
@@ -83,35 +114,87 @@ module.exports = async (req, res) => {
             }
         `;
 
+        console.log('Making request to subgraph for wallet:', walletAddress);
+
         const response = await fetch(subgraphUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'User-Agent': 'Graph-Delegator-Dashboard/1.0'
             },
             body: JSON.stringify({
                 query,
                 variables: { walletAddress: walletAddress.toLowerCase() }
             }),
+            timeout: 30000 // 30 second timeout
         });
 
+        console.log('Subgraph response status:', response.status);
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Subgraph HTTP error:', response.status, errorText);
+            return res.status(502).json({ 
+                error: `Subgraph request failed with status ${response.status}`,
+                details: errorText.substring(0, 200) // Limit error message length
+            });
         }
 
-        const data = await response.json();
-        
-        if (data.errors) {
+        let data;
+        try {
+            const responseText = await response.text();
+            console.log('Raw response length:', responseText.length);
+            data = JSON.parse(responseText);
+        } catch (jsonError) {
+            console.error('JSON parsing error:', jsonError);
+            return res.status(502).json({ 
+                error: 'Invalid JSON response from subgraph',
+                details: jsonError.message
+            });
+        }
+
+        // Check for GraphQL errors
+        if (data.errors && data.errors.length > 0) {
             console.error('GraphQL errors:', data.errors);
-            return res.status(400).json({ error: 'GraphQL query failed', details: data.errors });
+            return res.status(400).json({ 
+                error: 'GraphQL query failed', 
+                details: data.errors[0].message 
+            });
         }
 
-        res.status(200).json(data);
+        // Validate response structure
+        if (!data.data) {
+            console.error('Missing data field in response:', data);
+            return res.status(502).json({ 
+                error: 'Invalid response structure from subgraph' 
+            });
+        }
+
+        console.log('Successfully processed request for wallet:', walletAddress);
+        return res.status(200).json(data);
+
     } catch (error) {
-        console.error('Error fetching from subgraph:', error);
-        res.status(500).json({ 
-            error: 'Failed to fetch data from The Graph subgraph.',
-            details: error.message 
+        console.error('Unexpected error in delegator API:', error);
+        
+        // Handle different types of errors
+        if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+            return res.status(503).json({ 
+                error: 'Unable to connect to The Graph Network',
+                details: 'Network connection failed'
+            });
+        }
+        
+        if (error.name === 'AbortError' || error.code === 'ETIMEDOUT') {
+            return res.status(504).json({ 
+                error: 'Request timeout',
+                details: 'The Graph Network request took too long'
+            });
+        }
+
+        return res.status(500).json({ 
+            error: 'Internal server error',
+            details: error.message
         });
     }
 };
