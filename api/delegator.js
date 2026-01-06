@@ -1,3 +1,6 @@
+// Import fetch for Node.js environment
+const fetch = require('node-fetch');
+
 module.exports = async (req, res) => {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
