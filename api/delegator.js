@@ -1,94 +1,90 @@
-// Vercel serverless function for Graph Protocol delegator queries
-export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const fetch = require('node-fetch');
 
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+module.exports = async (req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept');
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
 
-  try {
     const { walletAddress } = req.body;
+    const GRAPH_API_KEY = process.env.GRAPH_API_KEY;
 
-    if (!walletAddress || !walletAddress.startsWith('0x')) {
-      return res.status(400).json({ error: 'Invalid wallet address' });
+    if (!GRAPH_API_KEY) {
+        return res.status(500).json({ error: 'API key not configured on the server.' });
     }
 
-    // Get API key from environment variable
-    const apiKey = process.env.GRAPH_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'API key not configured' });
-    }
-
-    // The Graph Network Ethereum subgraph URL
-    const subgraphUrl = `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8`;
+    const subgraphUrl = `https://gateway.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/9Co7EQe5PgW3ugCUJrJgRv4u9zdEuDJf8NvMWftNsBH8`;
 
     const query = `
-      query GetDelegatorInfo {
-        delegator(id: "${walletAddress.toLowerCase()}") {
-          id
-          totalStakedTokens
-          totalUnstakedTokens
-          totalRealizedRewards
-          stakesCount
-          activeStakesCount
-          createdAt
-          stakes(first: 50) {
-            id
-            indexer {
-              id
-              url
-              defaultDisplayName
-              stakedTokens
-              delegatedTokens
-              indexingRewardCut
-              queryFeeCut
-              delegationExchangeRate
-              queryFeesCollected
-              rewardsEarned
+        query GetDelegatorInfo($walletAddress: String!) {
+            delegator(id: $walletAddress) {
+                id
+                totalStakedTokens
+                totalUnstakedTokens
+                totalRealizedRewards
+                stakesCount
+                activeStakesCount
+                createdAt
+                stakes(first: 50) {
+                    id
+                    indexer {
+                        id
+                        url
+                        defaultDisplayName
+                        stakedTokens
+                        delegatedTokens
+                        indexingRewardCut
+                        queryFeeCut
+                        delegationExchangeRate
+                        queryFeesCollected
+                        rewardsEarned
+                        geoHash
+                        account {
+                            metadata {
+                                displayName
+                                description
+                                image
+                                website
+                            }
+                        }
+                    }
+                    stakedTokens
+                    unstakedTokens
+                    lockedTokens
+                    lockedUntil
+                    shareAmount
+                    personalExchangeRate
+                    realizedRewards
+                    createdAt
+                    lastDelegatedAt
+                    lastUndelegatedAt
+                }
             }
-            stakedTokens
-            unstakedTokens
-            lockedTokens
-            lockedUntil
-            shareAmount
-            personalExchangeRate
-            realizedRewards
-            createdAt
-            lastDelegatedAt
-            lastUndelegatedAt
-          }
         }
-      }
     `;
 
-    const response = await fetch(subgraphUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query })
-    });
+    try {
+        const response = await fetch(subgraphUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                query,
+                variables: { walletAddress: walletAddress.toLowerCase() }
+            }),
+        });
 
-    const data = await response.json();
-
-    if (data.errors) {
-      return res.status(400).json({ error: data.errors[0].message });
+        const data = await response.json();
+        res.status(200).json(data);
+    } catch (error) {
+        console.error('Error fetching from subgraph:', error);
+        res.status(500).json({ error: 'Failed to fetch data from The Graph subgraph.' });
     }
-
-    // Return the delegator data
-    res.status(200).json(data.data);
-
-  } catch (error) {
-    console.error('Error fetching delegator data:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
+};
