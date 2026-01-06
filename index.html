@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Graph Delegator Dashboard</title>
+    <title>The Graph Delegator Dashboard - Arbitrum</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -135,6 +135,19 @@
             margin: 0 auto;
             line-height: 1.5;
             font-weight: 400;
+        }
+
+        .network-badge {
+            display: inline-block;
+            background: rgba(248, 246, 255, 0.2);
+            border: 1px solid rgba(248, 246, 255, 0.3);
+            color: #F8F6FF;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 12px;
+            backdrop-filter: blur(10px);
         }
 
         .controls-bar {
@@ -872,6 +885,7 @@
                 </div>
                 <h1>Delegator Dashboard</h1>
                 <p>Analyze your delegations, track rewards, and monitor indexer performance on The Graph Network</p>
+                <div class="network-badge">🔗 Arbitrum Network</div>
             </div>
         </div>
 
@@ -882,7 +896,7 @@
                     class="search-input" 
                     id="walletInput"
                     placeholder="Enter wallet address (0x...)"
-                    value="0x1908a3232eed9186b4a5b666075711d2db0200e5"
+                    value="0xc69de45ec5e4ef1df6bef14229660c9211917d86"
                 >
                 <button class="search-btn" id="searchBtn" onclick="analyzeDelegations()">
                     Analyze Delegations
@@ -890,12 +904,15 @@
             </div>
             
             <div class="demo-addresses">
-                <div class="demo-title">📋 Try these demo addresses:</div>
-                <div class="demo-address" onclick="setAddress('0x1908a3232eed9186b4a5b666075711d2db0200e5')">
-                    0x1908a3232eed9186b4a5b666075711d2db0200e5
+                <div class="demo-title">📋 Try these Arbitrum demo addresses:</div>
+                <div class="demo-address" onclick="setAddress('0xc69de45ec5e4ef1df6bef14229660c9211917d86')">
+                    0xc69de45ec5e4ef1df6bef14229660c9211917d86
                 </div>
-                <div class="demo-address" onclick="setAddress('0x825b0a6393fc7c25f44f1985ad7857424bfb9ae6')">
-                    0x825b0a6393fc7c25f44f1985ad7857424bfb9ae6
+                <div class="demo-address" onclick="setAddress('0x9c90de4d1eab3d7ec5dca89ddbebc2e62d3ac311')">
+                    0x9c90de4d1eab3d7ec5dca89ddbebc2e62d3ac311
+                </div>
+                <div class="demo-address" onclick="setAddress('0xc773ff2c330eed0093d809d95870adebc8300ffb')">
+                    0xc773ff2c330eed0093d809d95870adebc8300ffb
                 </div>
             </div>
         </div>
@@ -903,7 +920,7 @@
         <div class="results" id="results">
             <div class="powered-by">
                 <h3>🚀 Ready to Use!</h3>
-                <p>No API key required - just enter a wallet address above to analyze delegations with real-time data from The Graph Network.</p>
+                <p>No API key required - just enter a wallet address above to analyze Arbitrum delegations with real-time data from The Graph Network.</p>
             </div>
         </div>
     </div>
@@ -998,10 +1015,25 @@
 
         function getIndexerAvatar(indexer) {
             if (indexer.account && indexer.account.metadata && indexer.account.metadata.image) {
-                return `<img src="${indexer.account.metadata.image}" alt="${indexer.defaultDisplayName}" onerror="this.style.display='none'; this.parentElement.innerHTML='${indexer.defaultDisplayName.charAt(0).toUpperCase()}';">`;
+                return `<img src="${indexer.account.metadata.image}" alt="${indexer.defaultDisplayName || 'Indexer'}" onerror="this.style.display='none'; this.parentElement.innerHTML='${getIndexerInitial(indexer)}';">`;
             }
             
-            return indexer.defaultDisplayName ? indexer.defaultDisplayName.charAt(0).toUpperCase() : '?';
+            return getIndexerInitial(indexer);
+        }
+
+        function getIndexerInitial(indexer) {
+            // Handle null/undefined defaultDisplayName
+            if (indexer.defaultDisplayName && indexer.defaultDisplayName.length > 0) {
+                return indexer.defaultDisplayName.charAt(0).toUpperCase();
+            }
+            
+            // Fallback to account metadata displayName
+            if (indexer.account && indexer.account.metadata && indexer.account.metadata.displayName) {
+                return indexer.account.metadata.displayName.charAt(0).toUpperCase();
+            }
+            
+            // Final fallback to first character of address
+            return indexer.id ? indexer.id.charAt(2).toUpperCase() : '?';
         }
 
         function getIndexerWebsite(indexer) {
@@ -1016,6 +1048,21 @@
                 return indexer.account.metadata.description;
             }
             return null;
+        }
+
+        function getIndexerName(indexer) {
+            // Try defaultDisplayName first
+            if (indexer.defaultDisplayName) {
+                return indexer.defaultDisplayName;
+            }
+            
+            // Try account metadata displayName
+            if (indexer.account && indexer.account.metadata && indexer.account.metadata.displayName) {
+                return indexer.account.metadata.displayName;
+            }
+            
+            // Fallback to shortened address
+            return `Indexer ${indexer.id.substring(0, 8)}...`;
         }
 
         function showError(title, message, details = null, showRetry = false) {
@@ -1055,7 +1102,7 @@
 
             searchBtn.disabled = true;
             searchBtn.textContent = 'Analyzing...';
-            resultsDiv.innerHTML = '<div class="loading">🔍 Fetching delegation data from The Graph Network...</div>';
+            resultsDiv.innerHTML = '<div class="loading">🔍 Fetching delegation data from The Graph Network (Arbitrum)...</div>';
 
             try {
                 const controller = new AbortController();
@@ -1120,8 +1167,8 @@
                 } else {
                     resultsDiv.innerHTML = showError(
                         'No Delegator Found',
-                        'This wallet address has no delegation history on The Graph Network.',
-                        'The wallet may not have any active or past delegations.'
+                        'This wallet address has no delegation history on The Graph Network (Arbitrum).',
+                        'The wallet may not have any active or past delegations on Arbitrum.'
                     );
                 }
 
@@ -1177,7 +1224,7 @@
                 );
                 const unrealizedRewardsFormatted = formatGRT(unrealizedRewards.toString());
                 
-                const indexerName = indexer.defaultDisplayName || `Indexer ${indexer.id.substring(0, 8)}...`;
+                const indexerName = getIndexerName(indexer);
                 const indexerWebsite = getIndexerWebsite(indexer);
                 const indexerAvatar = getIndexerAvatar(indexer);
                 const indexerDescription = getIndexerDescription(indexer);
