@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
     // Updated to use Arbitrum subgraph instead of Ethereum mainnet
     const subgraphUrl = `https://gateway.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/DZz4kDTdmzWLWsV373w2bSmoar3umKKH9y82SUKr5qmp`;
 
-    // GraphQL query for Arbitrum delegator data
+    // GraphQL query for Arbitrum delegator data - removed fields that don't exist in Arbitrum schema
     const query = `
         query {
             delegator(id: "${walletAddress.toLowerCase()}") {
@@ -61,12 +61,9 @@ module.exports = async (req, res) => {
                         queryFeesCollected
                         rewardsEarned
                         allocatedTokens
-                        annualizedReturn
                         createdAt
                         geoHash
                         lockedTokens
-                        stakingEfficiency
-                        totalReturn
                         unstakedTokens
                         account {
                             id
