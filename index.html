@@ -467,7 +467,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 24px;
-            margin-bottom: 32px;
         }
 
         .delegation-stat {
@@ -507,43 +506,6 @@
 
         .gain-negative {
             color: #FF79C6;
-        }
-
-        .indexer-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            padding: 32px;
-            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(111, 76, 255, 0.02) 100%);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .detail-item:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            color: var(--text-secondary);
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        .detail-value {
-            color: var(--text-primary);
-            font-weight: 700;
-            text-align: right;
-            transition: color 0.3s ease;
         }
 
         .powered-by {
@@ -686,10 +648,6 @@
             
             .delegation-stats {
                 grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .indexer-details {
-                grid-template-columns: 1fr;
             }
 
             .indexer-info {
@@ -845,14 +803,6 @@
             } else {
                 return grt.toFixed(2);
             }
-        }
-
-        function formatPercentage(partsPerMillion) {
-            // FIXED: The Graph uses parts per million where 1,000,000 = 100%
-            // Correct calculation: divide by 1,000,000 and multiply by 100
-            const percentage = (parseFloat(partsPerMillion) / 1000000) * 100;
-            console.log(`Converting ${partsPerMillion} parts per million to ${percentage.toFixed(2)}%`);
-            return percentage.toFixed(2) + '%';
         }
 
         function formatDate(timestamp) {
@@ -1059,12 +1009,6 @@
                 const indexerDescription = getIndexerDescription(indexer);
                 const createdDate = formatDate(indexer.createdAt);
                 
-                // Debug log the raw percentage values
-                console.log(`Indexer ${indexerName}:`, {
-                    indexingRewardCut: indexer.indexingRewardCut,
-                    queryFeeCut: indexer.queryFeeCut
-                });
-                
                 delegationsHTML += `
                     <div class="delegation-card ${!isActive ? 'inactive' : ''}">
                         <div class="indexer-header">
@@ -1096,25 +1040,6 @@
                             <div class="delegation-stat">
                                 <div class="delegation-stat-value">${realizedRewards} GRT</div>
                                 <div class="delegation-stat-label">Realized Rewards</div>
-                            </div>
-                        </div>
-                        
-                        <div class="indexer-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Indexing Reward Cut:</span>
-                                <span class="detail-value">${formatPercentage(indexer.indexingRewardCut)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Query Fee Cut:</span>
-                                <span class="detail-value">${formatPercentage(indexer.queryFeeCut)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Total Pool Size:</span>
-                                <span class="detail-value">${formatGRT(indexer.delegatedTokens)} GRT</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Indexer Self Stake:</span>
-                                <span class="detail-value">${formatGRT(indexer.stakedTokens)} GRT</span>
                             </div>
                         </div>
                     </div>
