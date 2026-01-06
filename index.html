@@ -848,9 +848,10 @@
         }
 
         function formatPercentage(partsPerMillion) {
-            // The Graph uses parts per million where 1,000,000 = 100%
-            // So we need to divide by 10,000 to get percentage
-            const percentage = partsPerMillion / 10000;
+            // FIXED: The Graph uses parts per million where 1,000,000 = 100%
+            // Correct calculation: divide by 1,000,000 and multiply by 100
+            const percentage = (parseFloat(partsPerMillion) / 1000000) * 100;
+            console.log(`Converting ${partsPerMillion} parts per million to ${percentage.toFixed(2)}%`);
             return percentage.toFixed(2) + '%';
         }
 
@@ -1057,6 +1058,12 @@
                 const indexerAvatar = getIndexerAvatar(indexer);
                 const indexerDescription = getIndexerDescription(indexer);
                 const createdDate = formatDate(indexer.createdAt);
+                
+                // Debug log the raw percentage values
+                console.log(`Indexer ${indexerName}:`, {
+                    indexingRewardCut: indexer.indexingRewardCut,
+                    queryFeeCut: indexer.queryFeeCut
+                });
                 
                 delegationsHTML += `
                     <div class="delegation-card ${!isActive ? 'inactive' : ''}">
