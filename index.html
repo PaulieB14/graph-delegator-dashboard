@@ -1265,6 +1265,20 @@
             const indexerGroups = groupStakesByIndexer(delegator.stakes);
             const uniqueIndexers = indexerGroups.length;
 
+            // Sort indexer groups: Active/Mixed first, then Inactive
+            indexerGroups.sort((a, b) => {
+                // Active/Mixed status gets priority (higher values first)
+                const aStatus = a.hasActiveStakes ? (a.hasInactiveStakes ? 2 : 3) : 1; // Mixed=2, Active=3, Inactive=1
+                const bStatus = b.hasActiveStakes ? (b.hasInactiveStakes ? 2 : 3) : 1;
+                
+                if (aStatus !== bStatus) {
+                    return bStatus - aStatus; // Higher status first
+                }
+                
+                // If same status, sort by total staked amount (descending)
+                return b.totalStakedTokens - a.totalStakedTokens;
+            });
+
             let delegationsHTML = '';
             let hasInactive = false;
             
