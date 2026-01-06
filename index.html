@@ -6,6 +6,34 @@
     <title>The Graph Delegator Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* Dark theme (default) */
+            --bg-gradient-start: #6F4CFF;
+            --bg-gradient-end: #0C0A1D;
+            --container-bg: #F8F6FF;
+            --text-primary: #0C0A1D;
+            --text-secondary: #494755;
+            --border-color: rgba(73, 71, 85, 0.15);
+            --card-bg: white;
+            --input-bg: white;
+            --shadow-color: rgba(12, 10, 29, 0.08);
+            --shadow-hover: rgba(12, 10, 29, 0.15);
+        }
+
+        [data-theme="light"] {
+            /* Light theme */
+            --bg-gradient-start: #F8F6FF;
+            --bg-gradient-end: #E8E4FF;
+            --container-bg: white;
+            --text-primary: #0C0A1D;
+            --text-secondary: #494755;
+            --border-color: rgba(73, 71, 85, 0.15);
+            --card-bg: #F8F6FF;
+            --input-bg: #F8F6FF;
+            --shadow-color: rgba(111, 76, 255, 0.08);
+            --shadow-hover: rgba(111, 76, 255, 0.15);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,19 +42,21 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #6F4CFF 0%, #0C0A1D 100%);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             min-height: 100vh;
             padding: 20px;
-            color: #0C0A1D;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: #F8F6FF;
+            background: var(--container-bg);
             border-radius: 24px;
             box-shadow: 0 32px 64px rgba(12, 10, 29, 0.25);
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .header {
@@ -103,10 +133,38 @@
             font-weight: 400;
         }
 
+        .controls-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .theme-toggle {
+            background: rgba(248, 246, 255, 0.2);
+            border: 1px solid rgba(248, 246, 255, 0.3);
+            color: #F8F6FF;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(248, 246, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
         .search-section {
             padding: 60px 40px;
-            background: #F8F6FF;
-            border-bottom: 1px solid rgba(73, 71, 85, 0.2);
+            background: var(--container-bg);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .search-box {
@@ -119,15 +177,15 @@
         .search-input {
             flex: 1;
             padding: 20px 28px;
-            border: 2px solid rgba(73, 71, 85, 0.3);
+            border: 2px solid var(--border-color);
             border-radius: 16px;
             font-size: 16px;
-            background: white;
-            color: #0C0A1D;
+            background: var(--input-bg);
+            color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             font-weight: 500;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px var(--shadow-color);
         }
 
         .search-input:focus {
@@ -164,7 +222,42 @@
 
         .results {
             padding: 60px 40px;
-            background: #F8F6FF;
+            background: var(--container-bg);
+            transition: all 0.3s ease;
+        }
+
+        .filters-section {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%);
+            color: #F8F6FF;
+            border-color: #6F4CFF;
+            box-shadow: 0 4px 12px rgba(111, 76, 255, 0.3);
+        }
+
+        .filter-btn:hover:not(.active) {
+            border-color: #6F4CFF;
+            color: #6F4CFF;
+            transform: translateY(-2px);
         }
 
         .portfolio-summary {
@@ -232,19 +325,28 @@
         }
 
         .delegation-card {
-            background: white;
-            border: 1px solid rgba(73, 71, 85, 0.15);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 36px;
             margin-bottom: 32px;
-            box-shadow: 0 8px 32px rgba(12, 10, 29, 0.08);
+            box-shadow: 0 8px 32px var(--shadow-color);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .delegation-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 48px rgba(12, 10, 29, 0.15);
+            box-shadow: 0 20px 48px var(--shadow-hover);
             border-color: rgba(111, 76, 255, 0.3);
+        }
+
+        .delegation-card.inactive {
+            opacity: 0.7;
+            display: none;
+        }
+
+        .delegation-card.inactive.show-inactive {
+            display: block;
         }
 
         .indexer-header {
@@ -295,19 +397,21 @@
         .indexer-name {
             font-size: 1.75rem;
             font-weight: 700;
-            color: #0C0A1D;
+            color: var(--text-primary);
             margin-bottom: 12px;
             letter-spacing: -0.01em;
+            transition: color 0.3s ease;
         }
 
         .indexer-description {
             font-size: 1rem;
-            color: #494755;
+            color: var(--text-secondary);
             line-height: 1.6;
             margin-bottom: 16px;
             max-height: 96px;
             overflow: hidden;
             text-overflow: ellipsis;
+            transition: color 0.3s ease;
         }
 
         .indexer-links {
@@ -369,8 +473,8 @@
         .delegation-stat {
             text-align: center;
             padding: 24px;
-            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.04) 100%);
-            border: 1px solid rgba(73, 71, 85, 0.15);
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(111, 76, 255, 0.04) 100%);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -384,15 +488,17 @@
         .delegation-stat-value {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #0C0A1D;
+            color: var(--text-primary);
             margin-bottom: 8px;
             letter-spacing: -0.01em;
+            transition: color 0.3s ease;
         }
 
         .delegation-stat-label {
             font-size: 0.95rem;
-            color: #494755;
+            color: var(--text-secondary);
             font-weight: 600;
+            transition: color 0.3s ease;
         }
 
         .gain-positive {
@@ -408,10 +514,11 @@
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 24px;
             padding: 32px;
-            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.02) 100%);
-            border: 1px solid rgba(73, 71, 85, 0.15);
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(111, 76, 255, 0.02) 100%);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
             font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
         .detail-item {
@@ -419,7 +526,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid rgba(73, 71, 85, 0.1);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .detail-item:last-child {
@@ -427,14 +534,16 @@
         }
 
         .detail-label {
-            color: #494755;
+            color: var(--text-secondary);
             font-weight: 600;
+            transition: color 0.3s ease;
         }
 
         .detail-value {
-            color: #0C0A1D;
+            color: var(--text-primary);
             font-weight: 700;
             text-align: right;
+            transition: color 0.3s ease;
         }
 
         .powered-by {
@@ -456,9 +565,10 @@
         .loading {
             text-align: center;
             padding: 80px;
-            color: #494755;
+            color: var(--text-secondary);
             font-size: 1.2rem;
             font-weight: 500;
+            transition: color 0.3s ease;
         }
 
         .error {
@@ -489,22 +599,24 @@
         .demo-addresses {
             margin-top: 32px;
             padding: 32px;
-            background: white;
+            background: var(--card-bg);
             border-radius: 20px;
-            border: 1px solid rgba(73, 71, 85, 0.15);
-            box-shadow: 0 8px 24px rgba(73, 71, 85, 0.08);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 24px var(--shadow-color);
+            transition: all 0.3s ease;
         }
 
         .demo-title {
             font-weight: 700;
-            color: #0C0A1D;
+            color: var(--text-primary);
             margin-bottom: 20px;
             font-size: 1.2rem;
+            transition: color 0.3s ease;
         }
 
         .demo-address {
             display: inline-block;
-            background: linear-gradient(135deg, #F8F6FF 0%, rgba(111, 76, 255, 0.04) 100%);
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(111, 76, 255, 0.04) 100%);
             padding: 14px 20px;
             margin: 8px;
             border-radius: 16px;
@@ -512,8 +624,9 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(73, 71, 85, 0.15);
+            border: 1px solid var(--border-color);
             font-weight: 600;
+            color: var(--text-primary);
         }
 
         .demo-address:hover {
@@ -525,9 +638,10 @@
 
         .created-date {
             font-size: 0.95rem;
-            color: #494755;
+            color: var(--text-secondary);
             margin-top: 8px;
             font-weight: 500;
+            transition: color 0.3s ease;
         }
 
         .retry-btn {
@@ -593,12 +707,28 @@
                 margin: 10px;
                 border-radius: 20px;
             }
+
+            .controls-bar {
+                position: static;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .filters-section {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <div class="controls-bar">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    🌙 Dark Mode
+                </button>
+            </div>
             <div class="header-content">
                 <div class="brand-logo">
                     <svg class="graph-logomark" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -647,6 +777,52 @@
     </div>
 
     <script>
+        let showInactive = false;
+
+        // Theme management
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (body.getAttribute('data-theme') === 'light') {
+                body.removeAttribute('data-theme');
+                themeToggle.innerHTML = '🌙 Dark Mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeToggle.innerHTML = '☀️ Light Mode';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (savedTheme === 'light') {
+                document.body.setAttribute('data-theme', 'light');
+                themeToggle.innerHTML = '☀️ Light Mode';
+            }
+        }
+
+        // Filter management
+        function toggleInactiveFilter() {
+            showInactive = !showInactive;
+            const inactiveCards = document.querySelectorAll('.delegation-card.inactive');
+            const filterBtn = document.querySelector('.filter-btn[data-filter="inactive"]');
+            
+            if (showInactive) {
+                inactiveCards.forEach(card => card.classList.add('show-inactive'));
+                filterBtn.classList.add('active');
+                filterBtn.textContent = '✅ Hide Inactive';
+            } else {
+                inactiveCards.forEach(card => card.classList.remove('show-inactive'));
+                filterBtn.classList.remove('active');
+                filterBtn.textContent = '👁️ Show Inactive';
+            }
+        }
+
         // Suppress wallet extension errors that don't affect our functionality
         window.addEventListener('error', function(e) {
             if (e.filename && (e.filename.includes('evmAsk.js') || e.filename.includes('requestProvider.js'))) {
@@ -859,10 +1035,13 @@
             const totalStakes = delegator.stakesCount;
 
             let delegationsHTML = '';
+            let hasInactive = false;
             
             delegator.stakes.forEach(stake => {
                 const indexer = stake.indexer;
                 const isActive = !stake.lastUndelegatedAt;
+                if (!isActive) hasInactive = true;
+                
                 const stakedAmount = formatGRT(stake.stakedTokens);
                 const realizedRewards = formatGRT(stake.realizedRewards);
                 
@@ -880,7 +1059,7 @@
                 const createdDate = formatDate(indexer.createdAt);
                 
                 delegationsHTML += `
-                    <div class="delegation-card">
+                    <div class="delegation-card ${!isActive ? 'inactive' : ''}">
                         <div class="indexer-header">
                             <div class="indexer-info">
                                 <div class="indexer-avatar">${indexerAvatar}</div>
@@ -935,6 +1114,14 @@
                 `;
             });
 
+            const filtersHTML = hasInactive ? `
+                <div class="filters-section">
+                    <button class="filter-btn" data-filter="inactive" onclick="toggleInactiveFilter()">
+                        👁️ Show Inactive
+                    </button>
+                </div>
+            ` : '';
+
             resultsDiv.innerHTML = `
                 <div class="portfolio-summary">
                     <div class="portfolio-title">
@@ -960,12 +1147,19 @@
                     </div>
                 </div>
                 
-                <h2 style="margin-bottom: 32px; color: #0C0A1D; font-size: 2rem; font-weight: 700;">🎯 Active Delegations</h2>
-                ${delegationsHTML || '<p style="text-align: center; color: #494755; font-size: 1.2rem;">No active delegations found.</p>'}
+                ${filtersHTML}
+                
+                <h2 style="margin-bottom: 32px; color: var(--text-primary); font-size: 2rem; font-weight: 700;">🎯 Delegations</h2>
+                ${delegationsHTML || '<p style="text-align: center; color: var(--text-secondary); font-size: 1.2rem;">No delegations found.</p>'}
             `;
+
+            // Reset filter state
+            showInactive = false;
         }
 
+        // Initialize theme on page load
         window.addEventListener('load', () => {
+            loadTheme();
             const defaultAddress = document.getElementById('walletInput').value;
             if (defaultAddress) {
                 analyzeDelegations();
