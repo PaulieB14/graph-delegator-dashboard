@@ -186,7 +186,7 @@
         .indexer-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 15px;
@@ -194,13 +194,14 @@
 
         .indexer-info {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 15px;
+            flex: 1;
         }
 
         .indexer-avatar {
-            width: 48px;
-            height: 48px;
+            width: 64px;
+            height: 64px;
             border-radius: 12px;
             background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%);
             display: flex;
@@ -208,8 +209,9 @@
             justify-content: center;
             color: #F8F6FF;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .indexer-avatar img {
@@ -221,13 +223,30 @@
 
         .indexer-details-header {
             flex: 1;
+            min-width: 0;
         }
 
         .indexer-name {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: #0C0A1D;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+        }
+
+        .indexer-description {
+            font-size: 0.9rem;
+            color: #494755;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .indexer-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .indexer-url {
@@ -235,6 +254,9 @@
             text-decoration: none;
             font-size: 0.9rem;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .indexer-url:hover {
@@ -242,11 +264,12 @@
         }
 
         .status-badge {
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
             text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .status-active {
@@ -296,7 +319,7 @@
 
         .indexer-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
             padding: 20px;
             background: #F8F6FF;
@@ -309,6 +332,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 8px 0;
         }
 
         .detail-label {
@@ -319,6 +343,33 @@
         .detail-value {
             color: #0C0A1D;
             font-weight: 600;
+            text-align: right;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #4BCA81 0%, #66D8FF 100%);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-top: 4px;
         }
 
         .powered-by {
@@ -380,6 +431,12 @@
             color: #F8F6FF;
         }
 
+        .created-date {
+            font-size: 0.8rem;
+            color: #494755;
+            margin-top: 4px;
+        }
+
         @media (max-width: 768px) {
             .search-box {
                 flex-direction: column;
@@ -400,6 +457,12 @@
             .indexer-info {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .indexer-avatar {
+                width: 48px;
+                height: 48px;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -475,6 +538,15 @@
             return percentage.toFixed(2) + '%';
         }
 
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
         function calculateUnrealizedRewards(stakedTokens, personalExchangeRate, currentExchangeRate) {
             if (!personalExchangeRate || !currentExchangeRate || !stakedTokens) return 0;
             
@@ -484,21 +556,25 @@
         }
 
         function getIndexerAvatar(indexer) {
-            // Check if indexer has metadata with image
             if (indexer.account && indexer.account.metadata && indexer.account.metadata.image) {
                 return `<img src="${indexer.account.metadata.image}" alt="${indexer.defaultDisplayName}" onerror="this.style.display='none'; this.parentElement.innerHTML='${indexer.defaultDisplayName.charAt(0).toUpperCase()}';">`;
             }
             
-            // Fallback to first letter of indexer name
             return indexer.defaultDisplayName ? indexer.defaultDisplayName.charAt(0).toUpperCase() : '?';
         }
 
         function getIndexerWebsite(indexer) {
-            // Prefer metadata website over url field
             if (indexer.account && indexer.account.metadata && indexer.account.metadata.website) {
                 return indexer.account.metadata.website;
             }
             return indexer.url || '#';
+        }
+
+        function getIndexerDescription(indexer) {
+            if (indexer.account && indexer.account.metadata && indexer.account.metadata.description) {
+                return indexer.account.metadata.description;
+            }
+            return null;
         }
 
         async function analyzeDelegations() {
@@ -585,6 +661,13 @@
                 const indexerName = indexer.defaultDisplayName || `Indexer ${indexer.id.substring(0, 8)}...`;
                 const indexerWebsite = getIndexerWebsite(indexer);
                 const indexerAvatar = getIndexerAvatar(indexer);
+                const indexerDescription = getIndexerDescription(indexer);
+                const createdDate = formatDate(indexer.createdAt);
+                
+                // Performance metrics
+                const totalRewardsEarned = formatGRT(indexer.rewardsEarned);
+                const queryFeesCollected = formatGRT(indexer.queryFeesCollected);
+                const annualizedReturn = indexer.annualizedReturn ? parseFloat(indexer.annualizedReturn).toFixed(2) + '%' : 'N/A';
                 
                 delegationsHTML += `
                     <div class="delegation-card">
@@ -593,7 +676,12 @@
                                 <div class="indexer-avatar">${indexerAvatar}</div>
                                 <div class="indexer-details-header">
                                     <div class="indexer-name">🏭 ${indexerName}</div>
-                                    ${indexerWebsite !== '#' ? `<a href="${indexerWebsite}" target="_blank" class="indexer-url">${indexerWebsite}</a>` : ''}
+                                    ${indexerDescription ? `<div class="indexer-description">${indexerDescription}</div>` : ''}
+                                    <div class="indexer-links">
+                                        ${indexerWebsite !== '#' ? `<a href="${indexerWebsite}" target="_blank" class="indexer-url">🌐 Website</a>` : ''}
+                                        ${indexer.url !== indexerWebsite ? `<a href="${indexer.url}" target="_blank" class="indexer-url">🔗 Service</a>` : ''}
+                                    </div>
+                                    <div class="created-date">Active since ${createdDate}</div>
                                 </div>
                             </div>
                             <div class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">
@@ -632,6 +720,25 @@
                             <div class="detail-item">
                                 <span class="detail-label">Indexer Self Stake:</span>
                                 <span class="detail-value">${formatGRT(indexer.stakedTokens)} GRT</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Exchange Rate:</span>
+                                <span class="detail-value">${parseFloat(indexer.delegationExchangeRate).toFixed(4)}</span>
+                            </div>
+                        </div>
+
+                        <div class="performance-metrics">
+                            <div class="metric-item">
+                                <div class="metric-value">${totalRewardsEarned} GRT</div>
+                                <div class="metric-label">Total Rewards Earned</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">${queryFeesCollected} GRT</div>
+                                <div class="metric-label">Query Fees Collected</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">${annualizedReturn}</div>
+                                <div class="metric-label">Annualized Return</div>
                             </div>
                         </div>
                     </div>
